@@ -22,10 +22,26 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background-color: #007bff;
+            background-image: url('background.jpg'); /* Замени на реальную ссылку или путь к изображению */
+            background-size: cover;
+            background-position: center;
             color: white;
-            font-size: 24px;
             text-align: center;
+            font-size: 24px;
+        }
+        #progress-bar {
+            width: 80%;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        #progress-fill {
+            width: 0;
+            height: 100%;
+            background-color: #4caf50;
+            transition: width 0.1s ease-in-out;
         }
         #game-screen {
             display: none;
@@ -76,7 +92,9 @@
     <!-- Экран загрузки -->
     <div id="loading-screen">
         <p>Загрузка игры...</p>
-        <p>Подождите несколько секунд</p>
+        <div id="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
     </div>
 
     <!-- Игровой экран -->
@@ -88,14 +106,22 @@
     </div>
 
     <script>
-        // Показываем загрузочный экран на 3 секунды
+        // Показываем загрузочный экран с прогресс-баром
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
+        const progressFill = document.getElementById('progress-fill');
 
-        setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            gameScreen.style.display = 'flex';
-        }, 3000); // 3000 мс = 3 секунды
+        let progress = 0;
+        const loadingInterval = setInterval(() => {
+            progress += 20; // Увеличиваем прогресс на 20% каждые 1000 мс (1 секунда)
+            progressFill.style.width = `${progress}%`;
+
+            if (progress >= 100) {
+                clearInterval(loadingInterval);
+                loadingScreen.style.display = 'none';
+                gameScreen.style.display = 'flex';
+            }
+        }, 1000); // 5 итераций = 5 секунд
 
         // Логика игры
         let score = 0;
