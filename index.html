@@ -6,19 +6,39 @@
     <title>Tap the Coin!</title>
     <style>
         body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #loading-screen {
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #007bff;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+        #game-screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
-            margin: 0;
-            background-color: #f0f8ff;
-            font-family: Arial, sans-serif;
+            width: 100%;
         }
         .game-container {
             position: relative;
             width: 300px;
-            height: 400px;
+            height: 500px;
             background-color: #fff;
             border: 2px solid #ccc;
             border-radius: 10px;
@@ -27,13 +47,13 @@
         }
         .coin {
             position: absolute;
-            width: 40px;
-            height: 40px;
-            background-image: url('coin.png'); /* Замени на свой файл монетки */
+            width: 50px;
+            height: 50px;
+            background-image: url('coin.png'); /* Замени на изображение монетки */
             background-size: cover;
         }
         .score {
-            margin-top: 20px;
+            margin-top: 10px;
             font-size: 20px;
             color: #333;
         }
@@ -41,11 +61,11 @@
             margin-top: 20px;
             padding: 10px 20px;
             background-color: #007bff;
-            color: white;
+            color: #fff;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
             font-size: 16px;
+            cursor: pointer;
         }
         button:hover {
             background-color: #0056b3;
@@ -53,21 +73,41 @@
     </style>
 </head>
 <body>
-    <div class="score">Счёт: <span id="score">0</span></div>
-    <div class="game-container" id="game-container"></div>
-    <button id="start-btn">Начать игру</button>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <p>Загрузка игры...</p>
+        <p>Подождите несколько секунд</p>
+    </div>
+
+    <!-- Игровой экран -->
+    <div id="game-screen">
+        <h1>Tap the Coin!</h1>
+        <div class="score">Счёт: <span id="score">0</span></div>
+        <div class="game-container" id="game-container"></div>
+        <button id="start-btn">Начать игру</button>
+    </div>
 
     <script>
+        // Показываем загрузочный экран на 3 секунды
+        const loadingScreen = document.getElementById('loading-screen');
+        const gameScreen = document.getElementById('game-screen');
+
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+        }, 3000); // 3000 мс = 3 секунды
+
+        // Логика игры
         let score = 0;
         const gameContainer = document.getElementById('game-container');
         const scoreDisplay = document.getElementById('score');
-        const startBtn = document.getElementById('start-btn');
+        const startButton = document.getElementById('start-btn');
 
         function createCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
-            const x = Math.random() * (gameContainer.offsetWidth - 40);
-            const y = Math.random() * (gameContainer.offsetHeight - 40);
+            const x = Math.random() * (gameContainer.offsetWidth - 50);
+            const y = Math.random() * (gameContainer.offsetHeight - 50);
             coin.style.left = `${x}px`;
             coin.style.top = `${y}px`;
 
@@ -86,11 +126,11 @@
             }, 2000); // Монетка исчезает через 2 секунды
         }
 
-        startBtn.addEventListener('click', () => {
+        startButton.addEventListener('click', () => {
             score = 0;
             scoreDisplay.textContent = score;
-            const gameInterval = setInterval(createCoin, 1000); // Создаём монетки каждую секунду
 
+            const gameInterval = setInterval(createCoin, 1000); // Монетки появляются каждую секунду
             setTimeout(() => {
                 clearInterval(gameInterval);
                 alert(`Игра окончена! Ваш счёт: ${score}`);
