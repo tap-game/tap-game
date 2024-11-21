@@ -22,7 +22,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background-image: url('background.jpg'); /* Замени на реальную ссылку или путь к изображению */
+            background-image: url('background.jpg'); /* Замени на своё изображение */
             background-size: cover;
             background-position: center;
             color: white;
@@ -65,8 +65,12 @@
             position: absolute;
             width: 50px;
             height: 50px;
-            background-image: url('coin.png'); /* Замени на изображение монетки */
+            background-image: url('coin.png'); /* Замени на своё изображение монетки */
             background-size: cover;
+            animation: fall 2s linear;
+        }
+        .coin.clicked {
+            animation: disappear 0.5s ease-out forwards;
         }
         .score {
             margin-top: 10px;
@@ -85,6 +89,20 @@
         }
         button:hover {
             background-color: #0056b3;
+        }
+        @keyframes fall {
+            from {
+                top: -60px;
+            }
+            to {
+                top: calc(100% - 60px);
+            }
+        }
+        @keyframes disappear {
+            to {
+                opacity: 0;
+                transform: scale(0);
+            }
         }
     </style>
 </head>
@@ -106,62 +124,14 @@
     </div>
 
     <script>
-        // Показываем загрузочный экран с прогресс-баром
+        // Экран загрузки
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
         const progressFill = document.getElementById('progress-fill');
 
         let progress = 0;
         const loadingInterval = setInterval(() => {
-            progress += 20; // Увеличиваем прогресс на 20% каждые 1000 мс (1 секунда)
+            progress += 20;
             progressFill.style.width = `${progress}%`;
 
             if (progress >= 100) {
-                clearInterval(loadingInterval);
-                loadingScreen.style.display = 'none';
-                gameScreen.style.display = 'flex';
-            }
-        }, 1000); // 5 итераций = 5 секунд
-
-        // Логика игры
-        let score = 0;
-        const gameContainer = document.getElementById('game-container');
-        const scoreDisplay = document.getElementById('score');
-        const startButton = document.getElementById('start-btn');
-
-        function createCoin() {
-            const coin = document.createElement('div');
-            coin.classList.add('coin');
-            const x = Math.random() * (gameContainer.offsetWidth - 50);
-            const y = Math.random() * (gameContainer.offsetHeight - 50);
-            coin.style.left = `${x}px`;
-            coin.style.top = `${y}px`;
-
-            coin.addEventListener('click', () => {
-                score++;
-                scoreDisplay.textContent = score;
-                coin.remove();
-            });
-
-            gameContainer.appendChild(coin);
-
-            setTimeout(() => {
-                if (coin.parentElement) {
-                    coin.remove();
-                }
-            }, 2000); // Монетка исчезает через 2 секунды
-        }
-
-        startButton.addEventListener('click', () => {
-            score = 0;
-            scoreDisplay.textContent = score;
-
-            const gameInterval = setInterval(createCoin, 1000); // Монетки появляются каждую секунду
-            setTimeout(() => {
-                clearInterval(gameInterval);
-                alert(`Игра окончена! Ваш счёт: ${score}`);
-            }, 30000); // Игра длится 30 секунд
-        });
-    </script>
-</body>
-</html>
