@@ -135,3 +135,50 @@
             progressFill.style.width = `${progress}%`;
 
             if (progress >= 100) {
+                clearInterval(loadingInterval);
+                loadingScreen.style.display = 'none';
+                gameScreen.style.display = 'flex';
+            }
+        }, 1000); // 5 секунд загрузки
+
+        // Логика игры
+        let score = 0;
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score');
+        const startButton = document.getElementById('start-btn');
+
+        function createCoin() {
+            const coin = document.createElement('div');
+            coin.classList.add('coin');
+            const x = Math.random() * (gameContainer.offsetWidth - 50);
+            coin.style.left = `${x}px`;
+
+            coin.addEventListener('click', () => {
+                score++;
+                scoreDisplay.textContent = score;
+                coin.classList.add('clicked');
+                setTimeout(() => coin.remove(), 500);
+            });
+
+            gameContainer.appendChild(coin);
+
+            setTimeout(() => {
+                if (coin.parentElement) {
+                    coin.remove();
+                }
+            }, 2000); // Монетка исчезает через 2 секунды
+        }
+
+        startButton.addEventListener('click', () => {
+            score = 0;
+            scoreDisplay.textContent = score;
+
+            const gameInterval = setInterval(createCoin, 1000); // Монетки появляются каждую секунду
+            setTimeout(() => {
+                clearInterval(gameInterval);
+                alert(`Игра окончена! Ваш счёт: ${score}`);
+            }, 30000); // Игра длится 30 секунд
+        });
+    </script>
+</body>
+</html>
