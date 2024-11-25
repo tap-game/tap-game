@@ -22,34 +22,12 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background-image: url('background.jpg'); /* Замени на своё изображение */
-            background-size: cover;
-            background-position: center;
+            background-color: #000;
             color: white;
             text-align: center;
-            font-size: 24px;
-        }
-        #progress-bar {
-            width: 80%;
-            height: 20px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 20px;
-        }
-        #progress-fill {
-            width: 0;
-            height: 100%;
-            background-color: #4caf50;
-            transition: width 0.1s ease-in-out;
         }
         #game-screen {
             display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100%;
         }
         .game-container {
             position: relative;
@@ -90,6 +68,19 @@
         button:hover {
             background-color: #0056b3;
         }
+        #mute-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff4d4d;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #mute-btn.active {
+            background-color: #4caf50;
+        }
         @keyframes fall {
             from {
                 top: -60px;
@@ -113,6 +104,7 @@
         <div id="progress-bar">
             <div id="progress-fill"></div>
         </div>
+        <button id="mute-btn">🔊 Включить/выключить звук</button>
     </div>
 
     <!-- Игровой экран -->
@@ -120,65 +112,72 @@
         <h1>Tap the Coin!</h1>
         <div class="score">Счёт: <span id="score">0</span></div>
         <div class="game-container" id="game-container"></div>
-        <button id="start-btn">Начать игру</button>
     </div>
 
+    <audio id="background-audio" loop>
+        <source src="background.mp3" type="audio/mp3">
+    </audio>
+    <audio id="coin-audio">
+        <source src="coin.mp3" type="audio/mp3">
+    </audio>
+
     <script>
-        // Экран загрузки
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
-        const progressFill = document.getElementById('progress-fill');
-
-        let progress = 0;
-        const loadingInterval = setInterval(() => {
-            progress += 20;
-            progressFill.style.width = `${progress}%`;
-
-            if (progress >= 100) {
-                clearInterval(loadingInterval);
-                loadingScreen.style.display = 'none';
-                gameScreen.style.display = 'flex';
-            }
-        }, 1000); // 5 секунд загрузки
-
-        // Логика игры
-        let score = 0;
+        const muteBtn = document.getElementById('mute-btn');
+        const backgroundAudio = document.getElementById('background-audio');
+        const coinAudio = document.getElementById('coin-audio');
         const gameContainer = document.getElementById('game-container');
         const scoreDisplay = document.getElementById('score');
-        const startButton = document.getElementById('start-btn');
 
-        function createCoin() {
+        let isMuted = false;
+        let score = 0;
+
+        // Фоновая музыка
+        backgroundAudio.play();
+
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            if (isMuted) {
+                backgroundAudio.pause();
+                muteBtn.classList.add('active');
+                muteBtn.textContent = '🔇 Звук выключен';
+            } else {
+                backgroundAudio.play();
+                muteBtn.classList.remove('active');
+                muteBtn.textContent = '🔊 Звук включен';
+            }
+        });
+
+        // Загрузка игры
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+        }, 5000);
+
+        // Добавление монеток
+        function spawnCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
-            const x = Math.random() * (gameContainer.offsetWidth - 50);
-            coin.style.left = `${x}px`;
+            coin.style.left = `${Math.random() * 80}%`;
+            gameContainer.appendChild(coin);
 
             coin.addEventListener('click', () => {
+                if (!isMuted) coinAudio.play();
+                coin.classList.add('clicked');
                 score++;
                 scoreDisplay.textContent = score;
-                coin.classList.add('clicked');
                 setTimeout(() => coin.remove(), 500);
             });
 
-            gameContainer.appendChild(coin);
-
             setTimeout(() => {
-                if (coin.parentElement) {
+                if (!coin.classList.contains('clicked')) {
                     coin.remove();
                 }
-            }, 2000); // Монетка исчезает через 2 секунды
+            }, 2000);
         }
 
-        startButton.addEventListener('click', () => {
-            score = 0;
-            scoreDisplay.textContent = score;
-
-            const gameInterval = setInterval(createCoin, 1000); // Монетки появляются каждую секунду
-            setTimeout(() => {
-                clearInterval(gameInterval);
-                alert(`Игра окончена! Ваш счёт: ${score}`);
-            }, 30000); // Игра длится 30 секунд
-        });
+        setInterval(spawnCoin, 1000);
     </script>
 </body>
 </html>
