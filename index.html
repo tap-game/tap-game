@@ -15,26 +15,14 @@
             height: 100vh;
             overflow: hidden;
         }
-        #loading-screen {
+        #game-screen {
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background-image: url('loading_background.jpg'); /* Загрузка экрана */
-            background-size: cover;
-            background-position: center;
-            color: white;
-            text-align: center;
-        }
-        #game-screen {
-            display: none;
-            position: relative;
+            justify-content: center;
             width: 100%;
             height: 100vh;
-            background-image: url('game_background.jpg'); /* Фон игры */
+            background-image: url('game_background.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -44,15 +32,23 @@
             height: 100%;
             overflow: hidden;
         }
-        .coin {
+        .coin, .bonus-coin {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            background-image: url('coin.png'); /* Монетка */
+            width: 50px;
+            height: 50px;
             background-size: cover;
-            animation: fall 3s linear;
+            animation: fall 2s linear;
         }
-        .coin.clicked {
+        .coin {
+            background-image: url('coin.png'); /* Обычная монетка */
+        }
+        .bonus-coin {
+            background-image: url('bonus_coin.png'); /* Бонусная монетка */
+            width: 70px;
+            height: 70px;
+            animation: fall 2.5s linear;
+        }
+        .coin.clicked, .bonus-coin.clicked {
             animation: pop 0.5s ease-out forwards;
         }
         .score {
@@ -66,32 +62,6 @@
             font-weight: bold;
             color: #333;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #mute-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #ff4d4d;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #mute-btn.active {
-            background-color: #4caf50;
         }
         @keyframes fall {
             from {
@@ -110,68 +80,25 @@
     </style>
 </head>
 <body>
-    <!-- Экран загрузки -->
-    <div id="loading-screen">
-        <p>Загрузка игры...</p>
-        <button id="mute-btn">🔊 Включить/выключить звук</button>
-    </div>
-
     <!-- Игровой экран -->
     <div id="game-screen">
         <div class="score">Счёт: <span id="score">0</span></div>
         <div class="game-container" id="game-container"></div>
     </div>
 
-    <audio id="background-audio" loop>
-        <source src="background.mp3" type="audio/mp3">
-    </audio>
-    <audio id="coin-audio">
-        <source src="coin.mp3" type="audio/mp3">
-    </audio>
-
     <script>
-        const loadingScreen = document.getElementById('loading-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const muteBtn = document.getElementById('mute-btn');
-        const backgroundAudio = document.getElementById('background-audio');
-        const coinAudio = document.getElementById('coin-audio');
         const gameContainer = document.getElementById('game-container');
         const scoreDisplay = document.getElementById('score');
-
-        let isMuted = false;
         let score = 0;
 
-        // Фоновая музыка
-        backgroundAudio.play();
-
-        muteBtn.addEventListener('click', () => {
-            isMuted = !isMuted;
-            if (isMuted) {
-                backgroundAudio.pause();
-                muteBtn.classList.add('active');
-                muteBtn.textContent = '🔇 Звук выключен';
-            } else {
-                backgroundAudio.play();
-                muteBtn.classList.remove('active');
-                muteBtn.textContent = '🔊 Звук включен';
-            }
-        });
-
-        // Загрузка игры
-        setTimeout(() => {
-            loadingScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-        }, 5000);
-
-        // Добавление монеток
+        // Функция для создания монеток
         function spawnCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
-            coin.style.left = `${Math.random() * 80}%`;
+            coin.style.left = `${Math.random() * 90}%`;
             gameContainer.appendChild(coin);
 
             coin.addEventListener('click', () => {
-                if (!isMuted) coinAudio.play();
                 coin.classList.add('clicked');
                 score++;
                 scoreDisplay.textContent = score;
@@ -182,10 +109,35 @@
                 if (!coin.classList.contains('clicked')) {
                     coin.remove();
                 }
-            }, 3000);
+            }, 2000);
         }
 
-        setInterval(spawnCoin, 1500);
+        // Функция для создания бонусной монетки
+        function spawnBonusCoin() {
+            const bonusCoin = document.createElement('div');
+            bonusCoin.classList.add('bonus-coin');
+            bonusCoin.style.left = `${Math.random() * 90}%`;
+            gameContainer.appendChild(bonusCoin);
+
+            bonusCoin.addEventListener('click', () => {
+                bonusCoin.classList.add('clicked');
+                score += 10; // Бонусная монетка даёт 10 очков
+                scoreDisplay.textContent = score;
+                setTimeout(() => bonusCoin.remove(), 500);
+            });
+
+            setTimeout(() => {
+                if (!bonusCoin.classList.contains('clicked')) {
+                    bonusCoin.remove();
+                }
+            }, 2500);
+        }
+
+        // Генерация монеток
+        setInterval(spawnCoin, 700); // Обычные монетки падают чаще
+
+        // Генерация бонусной монетки
+        setInterval(spawnBonusCoin, 5000); // Бонусная монетка появляется каждые 5 секунд
     </script>
 </body>
 </html>
