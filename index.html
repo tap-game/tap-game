@@ -13,6 +13,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
         #loading-screen {
             display: flex;
@@ -22,38 +23,48 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background-color: #000;
+            background-image: url('loading_background.jpg'); /* Замени на красивую картинку */
+            background-size: cover;
             color: white;
             text-align: center;
         }
         #game-screen {
             display: none;
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background-image: url('game_background.jpg'); /* Замени на фон игры */
+            background-size: cover;
+            background-position: center;
         }
         .game-container {
             position: relative;
-            width: 300px;
-            height: 500px;
-            background-color: #fff;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            height: 100%;
             overflow: hidden;
         }
         .coin {
             position: absolute;
-            width: 50px;
-            height: 50px;
-            background-image: url('coin.png'); /* Замени на своё изображение монетки */
+            width: 60px;
+            height: 60px;
+            background-image: url('coin.png'); /* Картинка монетки */
             background-size: cover;
-            animation: fall 2s linear;
+            animation: fall 3s linear;
         }
         .coin.clicked {
-            animation: disappear 0.5s ease-out forwards;
+            animation: pop 0.5s ease-out forwards;
         }
         .score {
-            margin-top: 10px;
-            font-size: 20px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
             color: #333;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         button {
             margin-top: 20px;
@@ -83,16 +94,16 @@
         }
         @keyframes fall {
             from {
-                top: -60px;
+                top: -70px;
             }
             to {
-                top: calc(100% - 60px);
+                top: calc(100% - 70px);
             }
         }
-        @keyframes disappear {
+        @keyframes pop {
             to {
+                transform: scale(1.5);
                 opacity: 0;
-                transform: scale(0);
             }
         }
     </style>
@@ -101,15 +112,11 @@
     <!-- Экран загрузки -->
     <div id="loading-screen">
         <p>Загрузка игры...</p>
-        <div id="progress-bar">
-            <div id="progress-fill"></div>
-        </div>
         <button id="mute-btn">🔊 Включить/выключить звук</button>
     </div>
 
     <!-- Игровой экран -->
     <div id="game-screen">
-        <h1>Tap the Coin!</h1>
         <div class="score">Счёт: <span id="score">0</span></div>
         <div class="game-container" id="game-container"></div>
     </div>
@@ -174,10 +181,10 @@
                 if (!coin.classList.contains('clicked')) {
                     coin.remove();
                 }
-            }, 2000);
+            }, 3000);
         }
 
-        setInterval(spawnCoin, 1000);
+        setInterval(spawnCoin, 1500);
     </script>
 </body>
 </html>
