@@ -37,7 +37,7 @@
             width: 50px;
             height: 50px;
             background-size: cover;
-            animation: fall 2s linear;
+            animation: fall 4s linear; /* Увеличена длительность анимации */
         }
         .coin {
             background-image: url('coin.png'); /* Обычная монетка */
@@ -46,7 +46,7 @@
             background-image: url('bonus_coin.png'); /* Бонусная монетка */
             width: 70px;
             height: 70px;
-            animation: fall 3s linear;
+            animation: fall 3s linear; /* Скорость бонусной монеты не меняется */
         }
         .coin.clicked, .bonus-coin.clicked {
             animation: pop 0.5s ease-out forwards;
@@ -86,12 +86,24 @@
         <div class="game-container" id="game-container"></div>
     </div>
 
+    <audio id="background-audio" loop>
+        <source src="background.mp3" type="audio/mp3">
+    </audio>
+    <audio id="coin-audio">
+        <source src="coin.mp3" type="audio/mp3">
+    </audio>
+
     <script>
         const gameContainer = document.getElementById('game-container');
         const scoreDisplay = document.getElementById('score');
+        const backgroundAudio = document.getElementById('background-audio');
+        const coinAudio = document.getElementById('coin-audio');
         let score = 0;
 
-        // Функция для создания монеток
+        // Включаем фоновую музыку
+        backgroundAudio.play();
+
+        // Функция для создания обычных монеток
         function spawnCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
@@ -103,6 +115,7 @@
                 coin.classList.add('clicked');
                 score++;
                 scoreDisplay.textContent = score;
+                if (!coinAudio.paused) coinAudio.play(); // Звук монетки
                 setTimeout(() => coin.remove(), 500);
             });
 
@@ -110,7 +123,7 @@
                 if (!coin.classList.contains('clicked')) {
                     coin.remove();
                 }
-            }, 3000);
+            }, 4000); // Дольше висит на экране
         }
 
         // Функция для создания бонусной монетки
@@ -125,6 +138,7 @@
                 bonusCoin.classList.add('clicked');
                 score += 10; // Бонусная монетка даёт 10 очков
                 scoreDisplay.textContent = score;
+                if (!coinAudio.paused) coinAudio.play(); // Звук монетки
                 setTimeout(() => bonusCoin.remove(), 500);
             });
 
@@ -132,14 +146,14 @@
                 if (!bonusCoin.classList.contains('clicked')) {
                     bonusCoin.remove();
                 }
-            }, 3500);
+            }, 3500); // Дольше висит на экране
         }
 
-        // Генерация обычных монеток (каждые 500 мс)
-        setInterval(spawnCoin, 500);
+        // Генерация обычных монеток
+        setInterval(spawnCoin, 700); // Частота появления монеток
 
-        // Генерация бонусной монетки (каждые 3 секунды)
-        setInterval(spawnBonusCoin, 3000);
+        // Генерация бонусной монетки
+        setInterval(spawnBonusCoin, 5000); // Частота появления бонусной монетки
     </script>
 </body>
 </html>
