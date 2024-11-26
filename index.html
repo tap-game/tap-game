@@ -46,7 +46,7 @@
             background-image: url('bonus_coin.png'); /* Бонусная монетка */
             width: 70px;
             height: 70px;
-            animation: fall 2.5s linear;
+            animation: fall 3s linear;
         }
         .coin.clicked, .bonus-coin.clicked {
             animation: pop 0.5s ease-out forwards;
@@ -96,6 +96,7 @@
             const coin = document.createElement('div');
             coin.classList.add('coin');
             coin.style.left = `${Math.random() * 90}%`;
+            coin.style.top = '-70px'; // Начальная позиция сверху
             gameContainer.appendChild(coin);
 
             coin.addEventListener('click', () => {
@@ -109,7 +110,7 @@
                 if (!coin.classList.contains('clicked')) {
                     coin.remove();
                 }
-            }, 2000);
+            }, 3000);
         }
 
         // Функция для создания бонусной монетки
@@ -117,6 +118,7 @@
             const bonusCoin = document.createElement('div');
             bonusCoin.classList.add('bonus-coin');
             bonusCoin.style.left = `${Math.random() * 90}%`;
+            bonusCoin.style.top = '-70px'; // Начальная позиция сверху
             gameContainer.appendChild(bonusCoin);
 
             bonusCoin.addEventListener('click', () => {
@@ -130,14 +132,14 @@
                 if (!bonusCoin.classList.contains('clicked')) {
                     bonusCoin.remove();
                 }
-            }, 2500);
+            }, 3500);
         }
 
-        // Генерация монеток
-        setInterval(spawnCoin, 700); // Обычные монетки падают чаще
+        // Генерация обычных монеток (каждые 500 мс)
+        setInterval(spawnCoin, 500);
 
-        // Генерация бонусной монетки
-        setInterval(spawnBonusCoin, 5000); // Бонусная монетка появляется каждые 5 секунд
+        // Генерация бонусной монетки (каждые 3 секунды)
+        setInterval(spawnBonusCoin, 3000);
     </script>
 </body>
 </html>
