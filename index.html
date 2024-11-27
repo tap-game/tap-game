@@ -94,7 +94,8 @@
         <h1>Добро пожаловать!</h1>
         <p>Текущий уровень: <span id="saved-level">1</span></p>
         <p>Ваши очки: <span id="saved-score">0</span></p>
-        <button id="start-btn">Начать игру</button>
+        <button id="continue-btn">Продолжить</button>
+        <button id="start-btn">Новая игра</button>
     </div>
 
     <!-- Игровой экран -->
@@ -113,14 +114,15 @@
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
         const startButton = document.getElementById('start-btn');
+        const continueButton = document.getElementById('continue-btn');
         const savedLevelDisplay = document.getElementById('saved-level');
         const savedScoreDisplay = document.getElementById('saved-score');
 
         let score = 0;
         let level = 1;
         let timeLeft = 40;
-        let coinInterval = 1000; // Интервал появления монет
-        let bonusInterval = 5000; // Интервал появления бонусных монет
+        let coinInterval = 1000;
+        let bonusInterval = 5000;
         let timer;
         let coinSpawnInterval;
         let bonusSpawnInterval;
@@ -139,6 +141,14 @@
         function saveProgress() {
             localStorage.setItem('score', score);
             localStorage.setItem('level', level);
+        }
+
+        // Сброс прогресса для новой игры
+        function resetProgress() {
+            score = 0;
+            level = 1;
+            timeLeft = 40;
+            saveProgress();
         }
 
         // Функция для перехода на следующий уровень
@@ -163,11 +173,11 @@
                 coin.classList.add('clicked');
                 score++;
                 scoreDisplay.textContent = score;
-                setTimeout(() => coin.remove(), 500);
 
                 if (score % 30 === 0) {
                     levelUp();
                 }
+                setTimeout(() => coin.remove(), 500);
             });
 
             setTimeout(() => {
@@ -189,11 +199,11 @@
                 bonusCoin.classList.add('clicked');
                 score += 10;
                 scoreDisplay.textContent = score;
-                setTimeout(() => bonusCoin.remove(), 500);
 
                 if (score % 30 === 0) {
                     levelUp();
                 }
+                setTimeout(() => bonusCoin.remove(), 500);
             });
 
             setTimeout(() => {
@@ -220,8 +230,19 @@
             }, 1000);
         }
 
-        // Старт игры
+        // Старт новой игры
         startButton.addEventListener('click', () => {
+            resetProgress();
+            startGame();
+        });
+
+        // Продолжение игры
+        continueButton.addEventListener('click', () => {
+            startGame();
+        });
+
+        // Начало игры
+        function startGame() {
             scoreDisplay.textContent = score;
             levelDisplay.textContent = level;
             timerDisplay.textContent = timeLeft;
@@ -230,9 +251,9 @@
             startTimer();
             coinSpawnInterval = setInterval(spawnCoin, coinInterval);
             bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
-        });
+        }
 
-        loadProgress(); // Загружаем прогресс при открытии страницы
+        loadProgress(); // Загрузка прогресса при открытии страницы
     </script>
 </body>
 </html>
