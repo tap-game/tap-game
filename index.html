@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap the Coin - Level Up!</title>
+    <title>Tap the Coin - Save and Continue!</title>
     <style>
         body {
             margin: 0;
@@ -15,7 +15,7 @@
             height: 100vh;
             overflow: hidden;
         }
-        #game-screen {
+        #game-screen, #start-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -25,6 +25,9 @@
             background-image: url('game_background.jpg');
             background-size: cover;
             background-position: center;
+        }
+        #game-screen {
+            display: none;
         }
         .game-container {
             position: relative;
@@ -51,10 +54,8 @@
         .coin.clicked, .bonus-coin.clicked {
             animation: pop 0.5s ease-out forwards;
         }
-        .score {
+        .score, .level, .timer {
             position: absolute;
-            top: 10px;
-            left: 10px;
             background-color: rgba(255, 255, 255, 0.8);
             padding: 10px 15px;
             border-radius: 10px;
@@ -63,39 +64,44 @@
             color: #333;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-        .level {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: rgba(0, 123, 255, 0.8);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
+        .score { top: 10px; left: 10px; }
+        .level { top: 10px; right: 10px; }
+        .timer { bottom: 10px; left: 50%; transform: translateX(-50%); }
         @keyframes fall {
-            from {
-                top: -70px;
-            }
-            to {
-                top: calc(100% - 70px);
-            }
+            from { top: -70px; }
+            to { top: calc(100% - 70px); }
         }
         @keyframes pop {
-            to {
-                transform: scale(1.5);
-                opacity: 0;
-            }
+            to { transform: scale(1.5); opacity: 0; }
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
+    <!-- Экран старта -->
+    <div id="start-screen">
+        <h1>Добро пожаловать!</h1>
+        <p>Текущий уровень: <span id="saved-level">1</span></p>
+        <p>Ваши очки: <span id="saved-score">0</span></p>
+        <button id="start-btn">Начать игру</button>
+    </div>
+
     <!-- Игровой экран -->
     <div id="game-screen">
         <div class="score">Счёт: <span id="score">0</span></div>
         <div class="level">Уровень: <span id="level">1</span></div>
+        <div class="timer">Оставшееся время: <span id="timer">40</span> секунд</div>
         <div class="game-container" id="game-container"></div>
     </div>
 
@@ -103,33 +109,52 @@
         const gameContainer = document.getElementById('game-container');
         const scoreDisplay = document.getElementById('score');
         const levelDisplay = document.getElementById('level');
+        const timerDisplay = document.getElementById('timer');
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const startButton = document.getElementById('start-btn');
+        const savedLevelDisplay = document.getElementById('saved-level');
+        const savedScoreDisplay = document.getElementById('saved-score');
+
         let score = 0;
         let level = 1;
-        let coinInterval = 1000; // Интервал появления монет (в миллисекундах)
+        let timeLeft = 40;
+        let coinInterval = 1000; // Интервал появления монет
         let bonusInterval = 5000; // Интервал появления бонусных монет
+        let timer;
+
+        // Загрузка сохранённого прогресса
+        function loadProgress() {
+            const savedScore = localStorage.getItem('score');
+            const savedLevel = localStorage.getItem('level');
+            if (savedScore) score = parseInt(savedScore);
+            if (savedLevel) level = parseInt(savedLevel);
+            savedScoreDisplay.textContent = score;
+            savedLevelDisplay.textContent = level;
+        }
+
+        // Сохранение прогресса
+        function saveProgress() {
+            localStorage.setItem('score', score);
+            localStorage.setItem('level', level);
+        }
 
         // Функция для перехода на следующий уровень
         function levelUp() {
             level++;
             levelDisplay.textContent = level;
-            coinInterval -= 100; // Увеличиваем частоту появления монет
-            if (coinInterval < 400) coinInterval = 400; // Ограничение минимальной скорости
-            bonusInterval -= 500; // Увеличиваем частоту бонусных монет
-            if (bonusInterval < 2000) bonusInterval = 2000;
-
-            // Обновляем интервалы
+            coinInterval -= 100;
+            if (coinInterval < 400) coinInterval = 400;
             clearInterval(coinSpawnInterval);
-            clearInterval(bonusSpawnInterval);
             coinSpawnInterval = setInterval(spawnCoin, coinInterval);
-            bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
         }
 
-        // Функция для создания обычных монет
+        // Функция для создания монет
         function spawnCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
             coin.style.left = `${Math.random() * 90}%`;
-            coin.style.top = '-70px'; // Начальная позиция сверху
+            coin.style.top = '-70px';
             gameContainer.appendChild(coin);
 
             coin.addEventListener('click', () => {
@@ -138,7 +163,6 @@
                 scoreDisplay.textContent = score;
                 setTimeout(() => coin.remove(), 500);
 
-                // Проверяем переход на следующий уровень
                 if (score % 30 === 0) {
                     levelUp();
                 }
@@ -148,39 +172,39 @@
                 if (!coin.classList.contains('clicked')) {
                     coin.remove();
                 }
-            }, 4000); // Монета исчезает через 4 секунды
+            }, 4000);
         }
 
-        // Функция для создания бонусных монет
-        function spawnBonusCoin() {
-            const bonusCoin = document.createElement('div');
-            bonusCoin.classList.add('bonus-coin');
-            bonusCoin.style.left = `${Math.random() * 90}%`;
-            bonusCoin.style.top = '-70px';
-            gameContainer.appendChild(bonusCoin);
-
-            bonusCoin.addEventListener('click', () => {
-                bonusCoin.classList.add('clicked');
-                score += 10;
-                scoreDisplay.textContent = score;
-                setTimeout(() => bonusCoin.remove(), 500);
-
-                // Проверяем переход на следующий уровень
-                if (score % 30 === 0) {
-                    levelUp();
+        // Таймер игры
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    clearInterval(coinSpawnInterval);
+                    clearInterval(bonusSpawnInterval);
+                    saveProgress();
+                    alert('Игра окончена! Ваш прогресс сохранён.');
+                    gameScreen.style.display = 'none';
+                    startScreen.style.display = 'flex';
                 }
-            });
-
-            setTimeout(() => {
-                if (!bonusCoin.classList.contains('clicked')) {
-                    bonusCoin.remove();
-                }
-            }, 3500); // Бонусная монета исчезает через 3.5 секунды
+            }, 1000);
         }
 
-        // Интервалы для спавна монет
-        let coinSpawnInterval = setInterval(spawnCoin, coinInterval);
-        let bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
+        // Старт игры
+        startButton.addEventListener('click', () => {
+            scoreDisplay.textContent = score;
+            levelDisplay.textContent = level;
+            timerDisplay.textContent = timeLeft;
+            startScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
+            startTimer();
+            coinSpawnInterval = setInterval(spawnCoin, coinInterval);
+            bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
+        });
+
+        loadProgress(); // Загружаем прогресс при открытии страницы
     </script>
 </body>
 </html>
