@@ -122,6 +122,8 @@
         let coinInterval = 1000; // Интервал появления монет
         let bonusInterval = 5000; // Интервал появления бонусных монет
         let timer;
+        let coinSpawnInterval;
+        let bonusSpawnInterval;
 
         // Загрузка сохранённого прогресса
         function loadProgress() {
@@ -173,6 +175,32 @@
                     coin.remove();
                 }
             }, 4000);
+        }
+
+        // Функция для создания бонусных монет
+        function spawnBonusCoin() {
+            const bonusCoin = document.createElement('div');
+            bonusCoin.classList.add('bonus-coin');
+            bonusCoin.style.left = `${Math.random() * 90}%`;
+            bonusCoin.style.top = '-70px';
+            gameContainer.appendChild(bonusCoin);
+
+            bonusCoin.addEventListener('click', () => {
+                bonusCoin.classList.add('clicked');
+                score += 10;
+                scoreDisplay.textContent = score;
+                setTimeout(() => bonusCoin.remove(), 500);
+
+                if (score % 30 === 0) {
+                    levelUp();
+                }
+            });
+
+            setTimeout(() => {
+                if (!bonusCoin.classList.contains('clicked')) {
+                    bonusCoin.remove();
+                }
+            }, 3500);
         }
 
         // Таймер игры
