@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap the Coin!</title>
+    <title>Tap the Coin - Level Up!</title>
     <style>
         body {
             margin: 0;
@@ -37,16 +37,16 @@
             width: 50px;
             height: 50px;
             background-size: cover;
-            animation: fall 4s linear; /* Увеличена длительность анимации */
+            animation: fall 4s linear;
         }
         .coin {
-            background-image: url('coin.png'); /* Обычная монетка */
+            background-image: url('coin.png');
         }
         .bonus-coin {
-            background-image: url('bonus_coin.png'); /* Бонусная монетка */
+            background-image: url('bonus_coin.png');
             width: 70px;
             height: 70px;
-            animation: fall 3s linear; /* Скорость бонусной монеты не меняется */
+            animation: fall 3s linear;
         }
         .coin.clicked, .bonus-coin.clicked {
             animation: pop 0.5s ease-out forwards;
@@ -61,6 +61,18 @@
             font-size: 18px;
             font-weight: bold;
             color: #333;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .level {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 123, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         @keyframes fall {
@@ -83,27 +95,36 @@
     <!-- Игровой экран -->
     <div id="game-screen">
         <div class="score">Счёт: <span id="score">0</span></div>
+        <div class="level">Уровень: <span id="level">1</span></div>
         <div class="game-container" id="game-container"></div>
     </div>
-
-    <audio id="background-audio" loop>
-        <source src="background.mp3" type="audio/mp3">
-    </audio>
-    <audio id="coin-audio">
-        <source src="coin.mp3" type="audio/mp3">
-    </audio>
 
     <script>
         const gameContainer = document.getElementById('game-container');
         const scoreDisplay = document.getElementById('score');
-        const backgroundAudio = document.getElementById('background-audio');
-        const coinAudio = document.getElementById('coin-audio');
+        const levelDisplay = document.getElementById('level');
         let score = 0;
+        let level = 1;
+        let coinInterval = 1000; // Интервал появления монет (в миллисекундах)
+        let bonusInterval = 5000; // Интервал появления бонусных монет
 
-        // Включаем фоновую музыку
-        backgroundAudio.play();
+        // Функция для перехода на следующий уровень
+        function levelUp() {
+            level++;
+            levelDisplay.textContent = level;
+            coinInterval -= 100; // Увеличиваем частоту появления монет
+            if (coinInterval < 400) coinInterval = 400; // Ограничение минимальной скорости
+            bonusInterval -= 500; // Увеличиваем частоту бонусных монет
+            if (bonusInterval < 2000) bonusInterval = 2000;
 
-        // Функция для создания обычных монеток
+            // Обновляем интервалы
+            clearInterval(coinSpawnInterval);
+            clearInterval(bonusSpawnInterval);
+            coinSpawnInterval = setInterval(spawnCoin, coinInterval);
+            bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
+        }
+
+        // Функция для создания обычных монет
         function spawnCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
@@ -115,45 +136,51 @@
                 coin.classList.add('clicked');
                 score++;
                 scoreDisplay.textContent = score;
-                if (!coinAudio.paused) coinAudio.play(); // Звук монетки
                 setTimeout(() => coin.remove(), 500);
+
+                // Проверяем переход на следующий уровень
+                if (score % 30 === 0) {
+                    levelUp();
+                }
             });
 
             setTimeout(() => {
                 if (!coin.classList.contains('clicked')) {
                     coin.remove();
                 }
-            }, 4000); // Дольше висит на экране
+            }, 4000); // Монета исчезает через 4 секунды
         }
 
-        // Функция для создания бонусной монетки
+        // Функция для создания бонусных монет
         function spawnBonusCoin() {
             const bonusCoin = document.createElement('div');
             bonusCoin.classList.add('bonus-coin');
             bonusCoin.style.left = `${Math.random() * 90}%`;
-            bonusCoin.style.top = '-70px'; // Начальная позиция сверху
+            bonusCoin.style.top = '-70px';
             gameContainer.appendChild(bonusCoin);
 
             bonusCoin.addEventListener('click', () => {
                 bonusCoin.classList.add('clicked');
-                score += 10; // Бонусная монетка даёт 10 очков
+                score += 10;
                 scoreDisplay.textContent = score;
-                if (!coinAudio.paused) coinAudio.play(); // Звук монетки
                 setTimeout(() => bonusCoin.remove(), 500);
+
+                // Проверяем переход на следующий уровень
+                if (score % 30 === 0) {
+                    levelUp();
+                }
             });
 
             setTimeout(() => {
                 if (!bonusCoin.classList.contains('clicked')) {
                     bonusCoin.remove();
                 }
-            }, 3500); // Дольше висит на экране
+            }, 3500); // Бонусная монета исчезает через 3.5 секунды
         }
 
-        // Генерация обычных монеток
-        setInterval(spawnCoin, 700); // Частота появления монеток
-
-        // Генерация бонусной монетки
-        setInterval(spawnBonusCoin, 5000); // Частота появления бонусной монетки
+        // Интервалы для спавна монет
+        let coinSpawnInterval = setInterval(spawnCoin, coinInterval);
+        let bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
     </script>
 </body>
 </html>
