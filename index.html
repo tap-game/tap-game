@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tap the Coin - Save and Continue!</title>
+    <title>Tap Game</title>
     <style>
         body {
             margin: 0;
@@ -15,7 +15,7 @@
             height: 100vh;
             overflow: hidden;
         }
-        #game-screen, #start-screen {
+        #start-screen, #game-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -33,28 +33,19 @@
             position: relative;
             width: 100%;
             height: 100%;
-            overflow: hidden;
         }
-        .coin, .bonus-coin {
+        .coin {
             position: absolute;
             width: 50px;
             height: 50px;
+            background-image: url('coin.png');
             background-size: cover;
             animation: fall 4s linear;
         }
-        .coin {
-            background-image: url('coin.png');
-        }
-        .bonus-coin {
-            background-image: url('bonus_coin.png');
-            width: 70px;
-            height: 70px;
-            animation: fall 3s linear;
-        }
-        .coin.clicked, .bonus-coin.clicked {
+        .coin.clicked {
             animation: pop 0.5s ease-out forwards;
         }
-        .score, .level, .timer, .countdown-timer {
+        .score, .timer {
             position: absolute;
             background-color: rgba(255, 255, 255, 0.8);
             padding: 10px 15px;
@@ -64,14 +55,14 @@
             color: #333;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-        .score { top: 10px; left: 10px; }
-        .level { top: 10px; right: 10px; }
-        .timer { bottom: 10px; left: 50%; transform: translateX(-50%); }
-        .countdown-timer {
-            position: absolute;
-            bottom: 100px;
-            font-size: 24px;
-            color: red;
+        .score {
+            top: 10px;
+            left: 10px;
+        }
+        .timer {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
         }
         button {
             padding: 10px 20px;
@@ -86,118 +77,68 @@
         button:hover {
             background-color: #0056b3;
         }
-        button.hidden {
-            display: none;
-        }
     </style>
 </head>
 <body>
     <!-- Экран старта -->
     <div id="start-screen">
-        <h1>Добро пожаловать!</h1>
-        <p>Текущий уровень: <span id="saved-level">1</span></p>
-        <p>Ваши очки: <span id="saved-score">0</span></p>
-        <p class="countdown-timer hidden">Ожидание: <span id="countdown">30</span> секунд</p>
+        <h1>Добро пожаловать в Tap Game!</h1>
         <button id="play-btn">Играть</button>
-        <button id="continue-btn" class="hidden">Продолжить</button>
     </div>
 
     <!-- Игровой экран -->
     <div id="game-screen">
         <div class="score">Счёт: <span id="score">0</span></div>
-        <div class="level">Уровень: <span id="level">1</span></div>
-        <div class="timer">Оставшееся время: <span id="timer">40</span> секунд</div>
+        <div class="timer">Оставшееся время: <span id="timer">30</span> секунд</div>
         <div class="game-container" id="game-container"></div>
     </div>
 
     <script>
-        const gameContainer = document.getElementById('game-container');
-        const scoreDisplay = document.getElementById('score');
-        const levelDisplay = document.getElementById('level');
-        const timerDisplay = document.getElementById('timer');
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
-        const countdownDisplay = document.getElementById('countdown');
         const playButton = document.getElementById('play-btn');
-        const continueButton = document.getElementById('continue-btn');
-        const countdownTimer = document.querySelector('.countdown-timer');
-        const savedLevelDisplay = document.getElementById('saved-level');
-        const savedScoreDisplay = document.getElementById('saved-score');
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score');
+        const timerDisplay = document.getElementById('timer');
 
         let score = 0;
-        let level = 1;
-        let timeLeft = 40;
-        let countdownTime = 30;
-        let coinInterval = 1000;
-        let bonusInterval = 5000;
-        let timer;
+        let timeLeft = 30;
         let coinSpawnInterval;
-        let bonusSpawnInterval;
+        let gameTimer;
 
-        // Загрузка сохраненного прогресса
-        function loadProgress() {
-            const savedScore = localStorage.getItem('score');
-            const savedLevel = localStorage.getItem('level');
-            score = savedScore ? parseFloat(savedScore) : 0;
-            level = savedLevel ? parseInt(savedLevel) : 1;
-            savedScoreDisplay.textContent = score.toFixed(2);
-            savedLevelDisplay.textContent = level;
-        }
+        // Начало игры
+        function startGame() {
+            score = 0;
+            timeLeft = 30;
+            scoreDisplay.textContent = score;
+            timerDisplay.textContent = timeLeft;
 
-        // Сохранение прогресса
-        function saveProgress() {
-            localStorage.setItem('score', score.toFixed(2));
-            localStorage.setItem('level', level);
-        }
+            startScreen.style.display = 'none';
+            gameScreen.style.display = 'flex';
 
-        // Таймер обратного отсчета
-        function startCountdown() {
-            playButton.classList.add('hidden');
-            continueButton.classList.add('hidden');
-            countdownTimer.classList.remove('hidden');
-            const countdownInterval = setInterval(() => {
-                countdownTime--;
-                score += 0.1;
-                savedScoreDisplay.textContent = score.toFixed(2);
-                countdownDisplay.textContent = countdownTime;
-                if (countdownTime <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownTimer.classList.add('hidden');
-                    continueButton.classList.remove('hidden');
-                }
-            }, 1000);
+            startTimer();
+            coinSpawnInterval = setInterval(spawnCoin, 1000);
         }
 
         // Таймер игры
         function startTimer() {
-            timer = setInterval(() => {
+            gameTimer = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = timeLeft;
+
                 if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    clearInterval(coinSpawnInterval);
-                    clearInterval(bonusSpawnInterval);
-                    saveProgress();
-                    alert('Игра окончена! Ваш прогресс сохранён.');
-                    gameScreen.style.display = 'none';
-                    startScreen.style.display = 'flex';
-                    countdownTime = 30;
-                    startCountdown();
+                    endGame();
                 }
             }, 1000);
         }
 
-        // Запуск игры
-        function startGame() {
-            scoreDisplay.textContent = score.toFixed(2);
-            levelDisplay.textContent = level;
-            timerDisplay.textContent = timeLeft;
-            startScreen.style.display = 'none';
-            gameScreen.style.display = 'flex';
-            timeLeft = 40;
-            startTimer();
-            coinSpawnInterval = setInterval(spawnCoin, coinInterval);
-            bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
+        // Конец игры
+        function endGame() {
+            clearInterval(gameTimer);
+            clearInterval(coinSpawnInterval);
+            alert(`Игра окончена! Ваш счёт: ${score}`);
+            startScreen.style.display = 'flex';
+            gameScreen.style.display = 'none';
         }
 
         // Спавн монет
@@ -205,38 +146,23 @@
             const coin = document.createElement('div');
             coin.classList.add('coin');
             coin.style.left = `${Math.random() * 90}%`;
-            coin.style.top = '-70px';
-            gameContainer.appendChild(coin);
+            coin.style.top = '-50px';
+
             coin.addEventListener('click', () => {
-                coin.classList.add('clicked');
                 score++;
-                scoreDisplay.textContent = score.toFixed(2);
-                setTimeout(() => coin.remove(), 500);
-                if (score % 30 === 0) {
-                    level++;
-                    levelDisplay.textContent = level;
-                }
+                scoreDisplay.textContent = score;
+                coin.remove();
             });
-            setTimeout(() => coin.remove(), 4000);
+
+            gameContainer.appendChild(coin);
+
+            setTimeout(() => {
+                coin.remove();
+            }, 4000);
         }
 
-        // Спавн бонусных монет
-        function spawnBonusCoin() {
-            const bonusCoin = document.createElement('div');
-            bonusCoin.classList.add('bonus-coin');
-            bonusCoin.style.left = `${Math.random() * 90}%`;
-            bonusCoin.style.top = '-70px';
-            gameContainer.appendChild(bonusCoin);
-            bonusCoin.addEventListener('click', () => {
-                bonusCoin.classList.add('clicked');
-                score += 10;
-                scoreDisplay.textContent = score.toFixed(2);
-                setTimeout(() => bonusCoin.remove(), 500);
-            });
-            setTimeout(() => bonusCoin.remove(), 4000);
-        }
-
-        playButton.addEventListener('click', startGame); // Привязка кнопки "Играть" к startGame
-        continueButton.addEventListener('click', startGame); // Привязка кнопки "Продолжить" к startGame
-
-        load
+        // Запуск игры по кнопке "Играть"
+        playButton.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
