@@ -98,6 +98,7 @@
         <p>Текущий уровень: <span id="saved-level">1</span></p>
         <p>Ваши очки: <span id="saved-score">0</span></p>
         <p class="countdown-timer">Ожидание: <span id="countdown">60</span> секунд</p>
+        <button id="play-btn">Играть</button>
         <button id="continue-btn" class="hidden">Продолжить</button>
     </div>
 
@@ -117,6 +118,7 @@
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
         const countdownDisplay = document.getElementById('countdown');
+        const playButton = document.getElementById('play-btn');
         const continueButton = document.getElementById('continue-btn');
         const savedLevelDisplay = document.getElementById('saved-level');
         const savedScoreDisplay = document.getElementById('saved-score');
@@ -149,6 +151,7 @@
 
         // Таймер обратного отсчета
         function startCountdown() {
+            playButton.classList.add('hidden'); // Скрыть кнопку "Играть"
             continueButton.classList.add('hidden'); // Скрыть кнопку "Продолжить"
             const countdownInterval = setInterval(() => {
                 countdownTime--;
@@ -238,12 +241,4 @@
             setTimeout(() => bonusCoin.remove(), 4000);
         }
 
-        continueButton.addEventListener('click', () => {
-            startGame();
-        });
-
-        loadProgress();
-        startCountdown();
-    </script>
-</body>
-</html>
+        playButton.addEventListener
