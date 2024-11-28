@@ -73,13 +73,6 @@
             font-size: 24px;
             color: red;
         }
-        @keyframes fall {
-            from { top: -70px; }
-            to { top: calc(100% - 70px); }
-        }
-        @keyframes pop {
-            to { transform: scale(1.5); opacity: 0; }
-        }
         button {
             padding: 10px 20px;
             font-size: 18px;
@@ -88,9 +81,13 @@
             background-color: #007bff;
             color: white;
             cursor: pointer;
+            margin-top: 20px;
         }
         button:hover {
             background-color: #0056b3;
+        }
+        button.hidden {
+            display: none;
         }
     </style>
 </head>
@@ -101,6 +98,7 @@
         <p>Текущий уровень: <span id="saved-level">1</span></p>
         <p>Ваши очки: <span id="saved-score">0</span></p>
         <p class="countdown-timer">Ожидание: <span id="countdown">60</span> секунд</p>
+        <button id="continue-btn" class="hidden">Продолжить</button>
     </div>
 
     <!-- Игровой экран -->
@@ -119,6 +117,7 @@
         const startScreen = document.getElementById('start-screen');
         const gameScreen = document.getElementById('game-screen');
         const countdownDisplay = document.getElementById('countdown');
+        const continueButton = document.getElementById('continue-btn');
         const savedLevelDisplay = document.getElementById('saved-level');
         const savedScoreDisplay = document.getElementById('saved-score');
 
@@ -150,6 +149,7 @@
 
         // Таймер обратного отсчета
         function startCountdown() {
+            continueButton.classList.add('hidden'); // Скрыть кнопку "Продолжить"
             const countdownInterval = setInterval(() => {
                 countdownTime--;
                 score += 0.1; // Добавляем 0.1 очков каждую секунду
@@ -158,7 +158,8 @@
 
                 if (countdownTime <= 0) {
                     clearInterval(countdownInterval);
-                    startGame();
+                    countdownDisplay.textContent = "Ожидание завершено!";
+                    continueButton.classList.remove('hidden'); // Показать кнопку "Продолжить"
                 }
             }, 1000);
         }
@@ -236,6 +237,10 @@
 
             setTimeout(() => bonusCoin.remove(), 4000);
         }
+
+        continueButton.addEventListener('click', () => {
+            startGame();
+        });
 
         loadProgress();
         startCountdown();
