@@ -138,7 +138,9 @@
         let coinSpawnInterval;
         let bonusSpawnInterval;
         let waitTime = 60;
+        let canContinue = false; // Переменная для отслеживания возможности продолжить игру
 
+        // Загрузка сохранённого прогресса
         function loadProgress() {
             const savedScore = localStorage.getItem('score');
             const savedLevel = localStorage.getItem('level');
@@ -148,11 +150,13 @@
             savedLevelDisplay.textContent = level;
         }
 
+        // Сохранение прогресса
         function saveProgress() {
             localStorage.setItem('score', score);
             localStorage.setItem('level', level);
         }
 
+        // Сброс прогресса для новой игры
         function resetProgress() {
             score = 0;
             level = 1;
@@ -160,10 +164,12 @@
             saveProgress();
         }
 
+        // Таймер ожидания перед продолжением
         function startWaitTimer() {
             waitTimerDisplay.style.display = 'block';
             continueButton.classList.add('disabled');
             continueButton.disabled = true;
+            canContinue = false;
 
             const waitInterval = setInterval(() => {
                 waitTime--;
@@ -174,11 +180,13 @@
                     waitTimerDisplay.style.display = 'none';
                     continueButton.classList.remove('disabled');
                     continueButton.disabled = false;
+                    canContinue = true;
                     waitTime = 60;
                 }
             }, 1000);
         }
 
+        // Таймер игры
         function startTimer() {
             timer = setInterval(() => {
                 timeLeft--;
@@ -196,26 +204,35 @@
             }, 1000);
         }
 
+        // Старт новой игры
         startButton.addEventListener('click', () => {
             resetProgress();
             startGame();
         });
 
+        // Продолжение игры
         continueButton.addEventListener('click', () => {
-            startGame();
+            if (canContinue) {
+                startGame();
+            } else {
+                alert("Подождите, пока таймер завершится!");
+            }
         });
 
+        // Начало игры
         function startGame() {
             scoreDisplay.textContent = score;
             levelDisplay.textContent = level;
             timerDisplay.textContent = timeLeft;
             startScreen.style.display = 'none';
             gameScreen.style.display = 'flex';
+            timeLeft = 40; // Обновляем таймер
             startTimer();
             coinSpawnInterval = setInterval(spawnCoin, coinInterval);
             bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
         }
 
+        // Спавн монет
         function spawnCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
@@ -238,24 +255,8 @@
             setTimeout(() => coin.remove(), 4000);
         }
 
+        // Спавн бонусных монет
         function spawnBonusCoin() {
             const bonusCoin = document.createElement('div');
             bonusCoin.classList.add('bonus-coin');
-            bonusCoin.style.left = `${Math.random() * 90}%`;
-            bonusCoin.style.top = '-70px';
-            gameContainer.appendChild(bonusCoin);
-
-            bonusCoin.addEventListener('click', () => {
-                bonusCoin.classList.add('clicked');
-                score += 10;
-                scoreDisplay.textContent = score;
-                setTimeout(() => bonusCoin.remove(), 500);
-            });
-
-            setTimeout(() => bonusCoin.remove(), 4000);
-        }
-
-        loadProgress();
-    </script>
-</body>
-</html>
+            bonusCoin.style.left = `${Math.random
