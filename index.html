@@ -120,21 +120,21 @@
         const countdownDisplay = document.getElementById('countdown');
         const playButton = document.getElementById('play-btn');
         const continueButton = document.getElementById('continue-btn');
+        const countdownTimer = document.querySelector('.countdown-timer');
         const savedLevelDisplay = document.getElementById('saved-level');
         const savedScoreDisplay = document.getElementById('saved-score');
-        const countdownTimer = document.querySelector('.countdown-timer');
 
         let score = 0;
         let level = 1;
         let timeLeft = 40;
-        let countdownTime = 30; // Время ожидания
+        let countdownTime = 30;
         let coinInterval = 1000;
         let bonusInterval = 5000;
         let timer;
         let coinSpawnInterval;
         let bonusSpawnInterval;
 
-        // Загрузка сохранённого прогресса
+        // Загрузка сохраненного прогресса
         function loadProgress() {
             const savedScore = localStorage.getItem('score');
             const savedLevel = localStorage.getItem('level');
@@ -152,21 +152,18 @@
 
         // Таймер обратного отсчета
         function startCountdown() {
-            playButton.classList.add('hidden'); // Скрыть кнопку "Играть"
-            continueButton.classList.add('hidden'); // Скрыть кнопку "Продолжить"
-            countdownTimer.classList.remove('hidden'); // Показать таймер
-
+            playButton.classList.add('hidden');
+            continueButton.classList.add('hidden');
+            countdownTimer.classList.remove('hidden');
             const countdownInterval = setInterval(() => {
                 countdownTime--;
-                score += 0.1; // Добавляем 0.1 очков каждую секунду
+                score += 0.1;
                 savedScoreDisplay.textContent = score.toFixed(2);
                 countdownDisplay.textContent = countdownTime;
-
                 if (countdownTime <= 0) {
                     clearInterval(countdownInterval);
-                    countdownDisplay.textContent = "Ожидание завершено!";
-                    countdownTimer.classList.add('hidden'); // Скрыть таймер
-                    continueButton.classList.remove('hidden'); // Показать кнопку "Продолжить"
+                    countdownTimer.classList.add('hidden');
+                    continueButton.classList.remove('hidden');
                 }
             }, 1000);
         }
@@ -176,7 +173,6 @@
             timer = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = timeLeft;
-
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     clearInterval(coinSpawnInterval);
@@ -185,7 +181,7 @@
                     alert('Игра окончена! Ваш прогресс сохранён.');
                     gameScreen.style.display = 'none';
                     startScreen.style.display = 'flex';
-                    countdownTime = 30; // Сброс обратного отсчета
+                    countdownTime = 30;
                     startCountdown();
                 }
             }, 1000);
@@ -198,7 +194,7 @@
             timerDisplay.textContent = timeLeft;
             startScreen.style.display = 'none';
             gameScreen.style.display = 'flex';
-            timeLeft = 40; // Обновляем таймер
+            timeLeft = 40;
             startTimer();
             coinSpawnInterval = setInterval(spawnCoin, coinInterval);
             bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
@@ -211,19 +207,16 @@
             coin.style.left = `${Math.random() * 90}%`;
             coin.style.top = '-70px';
             gameContainer.appendChild(coin);
-
             coin.addEventListener('click', () => {
                 coin.classList.add('clicked');
                 score++;
                 scoreDisplay.textContent = score.toFixed(2);
                 setTimeout(() => coin.remove(), 500);
-
                 if (score % 30 === 0) {
                     level++;
                     levelDisplay.textContent = level;
                 }
             });
-
             setTimeout(() => coin.remove(), 4000);
         }
 
@@ -234,12 +227,16 @@
             bonusCoin.style.left = `${Math.random() * 90}%`;
             bonusCoin.style.top = '-70px';
             gameContainer.appendChild(bonusCoin);
-
             bonusCoin.addEventListener('click', () => {
                 bonusCoin.classList.add('clicked');
                 score += 10;
                 scoreDisplay.textContent = score.toFixed(2);
                 setTimeout(() => bonusCoin.remove(), 500);
             });
+            setTimeout(() => bonusCoin.remove(), 4000);
+        }
 
-            setTimeout(() => bonusCoin
+        playButton.addEventListener('click', startGame); // Привязка кнопки "Играть" к startGame
+        continueButton.addEventListener('click', startGame); // Привязка кнопки "Продолжить" к startGame
+
+        load
