@@ -68,9 +68,7 @@
         .level { top: 10px; right: 10px; }
         .timer { bottom: 10px; left: 50%; transform: translateX(-50%); }
         .wait-timer {
-            bottom: 10px;
             color: red;
-            text-align: center;
             font-size: 20px;
             display: none;
         }
@@ -105,7 +103,7 @@
         <h1>Добро пожаловать!</h1>
         <p>Текущий уровень: <span id="saved-level">1</span></p>
         <p>Ваши очки: <span id="saved-score">0</span></p>
-        <p class="wait-timer" id="wait-timer">Подождите 60 секунд...</p>
+        <p id="wait-timer" class="wait-timer">Подождите 60 секунд...</p>
         <button id="continue-btn" class="disabled" disabled>Продолжить</button>
         <button id="start-btn">Новая игра</button>
     </div>
@@ -139,7 +137,7 @@
         let timer;
         let coinSpawnInterval;
         let bonusSpawnInterval;
-        let waitTime = 60; // Время ожидания
+        let waitTime = 60;
 
         // Загрузка сохранённого прогресса
         function loadProgress() {
@@ -180,7 +178,7 @@
                     waitTimerDisplay.style.display = 'none';
                     continueButton.classList.remove('disabled');
                     continueButton.disabled = false;
-                    waitTime = 60; // Сброс времени
+                    waitTime = 60;
                 }
             }, 1000);
         }
@@ -221,15 +219,44 @@
             timerDisplay.textContent = timeLeft;
             startScreen.style.display = 'none';
             gameScreen.style.display = 'flex';
+            timeLeft = 40; // Обновляем таймер
             startTimer();
             coinSpawnInterval = setInterval(spawnCoin, coinInterval);
             bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
         }
 
-        // Функции для монет и уровней остаются те же...
-        // Спавн монет и бонусов (не изменялся)
+        // Спавн монет
+        function spawnCoin() {
+            const coin = document.createElement('div');
+            coin.classList.add('coin');
+            coin.style.left = `${Math.random() * 90}%`;
+            coin.style.top = '-70px';
+            gameContainer.appendChild(coin);
 
-        loadProgress(); // Загружаем прогресс при открытии страницы
-    </script>
-</body>
-</html>
+            coin.addEventListener('click', () => {
+                coin.classList.add('clicked');
+                score++;
+                scoreDisplay.textContent = score;
+                setTimeout(() => coin.remove(), 500);
+
+                if (score % 30 === 0) {
+                    level++;
+                    levelDisplay.textContent = level;
+                }
+            });
+
+            setTimeout(() => coin.remove(), 4000);
+        }
+
+        // Спавн бонусных монет
+        function spawnBonusCoin() {
+            const bonusCoin = document.createElement('div');
+            bonusCoin.classList.add('bonus-coin');
+            bonusCoin.style.left = `${Math.random() * 90}%`;
+            bonusCoin.style.top = '-70px';
+            gameContainer.appendChild(bonusCoin);
+
+            bonusCoin.addEventListener('click', () => {
+                bonusCoin.classList.add('clicked');
+                score += 10;
+                scoreDisplay
