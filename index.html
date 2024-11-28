@@ -97,7 +97,7 @@
         <h1>Добро пожаловать!</h1>
         <p>Текущий уровень: <span id="saved-level">1</span></p>
         <p>Ваши очки: <span id="saved-score">0</span></p>
-        <p class="countdown-timer">Ожидание: <span id="countdown">30</span> секунд</p>
+        <p class="countdown-timer hidden">Ожидание: <span id="countdown">30</span> секунд</p>
         <button id="play-btn">Играть</button>
         <button id="continue-btn" class="hidden">Продолжить</button>
     </div>
@@ -122,6 +122,7 @@
         const continueButton = document.getElementById('continue-btn');
         const savedLevelDisplay = document.getElementById('saved-level');
         const savedScoreDisplay = document.getElementById('saved-score');
+        const countdownTimer = document.querySelector('.countdown-timer');
 
         let score = 0;
         let level = 1;
@@ -153,6 +154,8 @@
         function startCountdown() {
             playButton.classList.add('hidden'); // Скрыть кнопку "Играть"
             continueButton.classList.add('hidden'); // Скрыть кнопку "Продолжить"
+            countdownTimer.classList.remove('hidden'); // Показать таймер
+
             const countdownInterval = setInterval(() => {
                 countdownTime--;
                 score += 0.1; // Добавляем 0.1 очков каждую секунду
@@ -162,6 +165,7 @@
                 if (countdownTime <= 0) {
                     clearInterval(countdownInterval);
                     countdownDisplay.textContent = "Ожидание завершено!";
+                    countdownTimer.classList.add('hidden'); // Скрыть таймер
                     continueButton.classList.remove('hidden'); // Показать кнопку "Продолжить"
                 }
             }, 1000);
@@ -238,4 +242,4 @@
                 setTimeout(() => bonusCoin.remove(), 500);
             });
 
-            setTimeout(() => bonus
+            setTimeout(() => bonusCoin
