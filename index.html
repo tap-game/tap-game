@@ -139,23 +139,20 @@
         let bonusSpawnInterval;
         let waitTime = 60;
 
-        // Загрузка сохранённого прогресса
         function loadProgress() {
             const savedScore = localStorage.getItem('score');
             const savedLevel = localStorage.getItem('level');
-            if (savedScore) score = parseInt(savedScore);
-            if (savedLevel) level = parseInt(savedLevel);
+            score = savedScore ? parseInt(savedScore) : 0;
+            level = savedLevel ? parseInt(savedLevel) : 1;
             savedScoreDisplay.textContent = score;
             savedLevelDisplay.textContent = level;
         }
 
-        // Сохранение прогресса
         function saveProgress() {
             localStorage.setItem('score', score);
             localStorage.setItem('level', level);
         }
 
-        // Сброс прогресса для новой игры
         function resetProgress() {
             score = 0;
             level = 1;
@@ -163,7 +160,6 @@
             saveProgress();
         }
 
-        // Таймер ожидания перед продолжением
         function startWaitTimer() {
             waitTimerDisplay.style.display = 'block';
             continueButton.classList.add('disabled');
@@ -183,7 +179,6 @@
             }, 1000);
         }
 
-        // Таймер игры
         function startTimer() {
             timer = setInterval(() => {
                 timeLeft--;
@@ -201,32 +196,26 @@
             }, 1000);
         }
 
-        // Старт новой игры
         startButton.addEventListener('click', () => {
             resetProgress();
             startGame();
         });
 
-        // Продолжение игры
         continueButton.addEventListener('click', () => {
-            timeLeft = 40; // Сбрасываем таймер
             startGame();
         });
 
-        // Начало игры
         function startGame() {
             scoreDisplay.textContent = score;
             levelDisplay.textContent = level;
             timerDisplay.textContent = timeLeft;
             startScreen.style.display = 'none';
             gameScreen.style.display = 'flex';
-            timeLeft = 40; // Обновляем таймер
             startTimer();
             coinSpawnInterval = setInterval(spawnCoin, coinInterval);
             bonusSpawnInterval = setInterval(spawnBonusCoin, bonusInterval);
         }
 
-        // Спавн монет
         function spawnCoin() {
             const coin = document.createElement('div');
             coin.classList.add('coin');
@@ -249,7 +238,6 @@
             setTimeout(() => coin.remove(), 4000);
         }
 
-        // Спавн бонусных монет
         function spawnBonusCoin() {
             const bonusCoin = document.createElement('div');
             bonusCoin.classList.add('bonus-coin');
@@ -258,3 +246,16 @@
             gameContainer.appendChild(bonusCoin);
 
             bonusCoin.addEventListener('click', () => {
+                bonusCoin.classList.add('clicked');
+                score += 10;
+                scoreDisplay.textContent = score;
+                setTimeout(() => bonusCoin.remove(), 500);
+            });
+
+            setTimeout(() => bonusCoin.remove(), 4000);
+        }
+
+        loadProgress();
+    </script>
+</body>
+</html>
