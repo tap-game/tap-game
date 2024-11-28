@@ -40,7 +40,7 @@
             height: 50px;
             background-image: url('coin.png');
             background-size: cover;
-            animation: fall 4s linear;
+            animation: fall 3s linear;
         }
         .coin.clicked {
             animation: pop 0.5s ease-out forwards;
@@ -148,6 +148,7 @@
             coin.style.left = `${Math.random() * 90}%`;
             coin.style.top = '-50px';
 
+            // Добавляем событие клика для монеты
             coin.addEventListener('click', () => {
                 score++;
                 scoreDisplay.textContent = score;
@@ -156,6 +157,7 @@
 
             gameContainer.appendChild(coin);
 
+            // Анимация монеты
             setTimeout(() => {
                 coin.remove();
             }, 4000);
