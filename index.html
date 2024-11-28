@@ -209,6 +209,7 @@
 
         // Продолжение игры
         continueButton.addEventListener('click', () => {
+            timeLeft = 40; // Сбрасываем таймер
             startGame();
         });
 
@@ -257,6 +258,3 @@
             gameContainer.appendChild(bonusCoin);
 
             bonusCoin.addEventListener('click', () => {
-                bonusCoin.classList.add('clicked');
-                score += 10;
-                scoreDisplay
