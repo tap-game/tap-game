@@ -13,29 +13,40 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-image: url('game_background.jpg'); /* Фон игры */
+        }
+        #loading-screen, #game-screen, #summary-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        #loading-screen {
+            background-image: url('loading_background.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+        }
+        #game-screen {
+            background-image: url('game_background.jpg');
             background-size: cover;
             background-position: center;
         }
-        #loading-screen {
+        #summary-screen {
+            background-image: url('summary_background.jpg'); /* Новый фон */
+            background-size: cover;
+            background-position: center;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            background-image: url('loading_background.jpg');
-            background-size: cover;
-            background-position: center;
-        }
-        #game-screen {
-            display: none;
-            width: 100%;
-            height: 100%;
-            position: relative;
+            color: white;
+            font-size: 24px;
         }
         #timer, #score {
             position: absolute;
@@ -54,18 +65,6 @@
             top: 10px;
             right: 10px;
         }
-        #level-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: white;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 10px;
-            display: none;
-        }
         .button {
             padding: 10px 20px;
             font-size: 18px;
@@ -79,51 +78,11 @@
         .button:disabled {
             background-color: #cccccc;
         }
-        #start-button {
+        #start-button, #continue-button {
             position: absolute;
             bottom: 20%;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 10;
-        }
-        #continue-button {
-            position: absolute;
-            bottom: 15%;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            z-index: 10;
-        }
-        #toggle-sound {
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-        .coin {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-image: url('coin.png');
-            background-size: cover;
-            animation: fall 5s linear infinite;
-        }
-        .bonus-coin {
-            position: absolute;
-            width: 60px;
-            height: 60px;
-            background-image: url('bonus_coin.png');
-            background-size: cover;
-            animation: fall 4s linear infinite;
-        }
-        @keyframes fall {
-            from {
-                top: -50px;
-            }
-            to {
-                top: calc(100vh - 50px);
-            }
         }
     </style>
 </head>
@@ -137,99 +96,70 @@
     <div id="game-screen">
         <div id="timer">Оставшееся время: 30 секунд</div>
         <div id="score">Счёт: 0</div>
-        <div id="level-message"></div>
-        <button class="button" id="start-button">Играть</button>
-        <button class="button" id="continue-button" disabled>Продолжить</button>
-        <button class="button" id="toggle-sound">Звук: Включен</button>
         <div id="game-container" style="position: relative; width: 100%; height: 100%;"></div>
+        <button class="button" id="start-button">Играть</button>
+    </div>
+
+    <!-- Итоговый экран -->
+    <div id="summary-screen">
+        <div id="final-score">Счёт: 0</div>
+        <div id="mining-info">Майнинг монет: 0</div>
+        <button class="button" id="continue-button" disabled>Продолжить</button>
     </div>
 
     <script>
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
+        const summaryScreen = document.getElementById('summary-screen');
         const startButton = document.getElementById('start-button');
         const continueButton = document.getElementById('continue-button');
         const timerEl = document.getElementById('timer');
         const scoreEl = document.getElementById('score');
-        const levelMessage = document.getElementById('level-message');
-        const gameContainer = document.getElementById('game-container');
-        const toggleSoundButton = document.getElementById('toggle-sound');
+        const finalScoreEl = document.getElementById('final-score');
+        const miningInfoEl = document.getElementById('mining-info');
 
         let score = 0;
         let timer = 30;
-        let level = 1;
-        let timerInterval;
-        let soundEnabled = true;
-        let coinFallSpeed = 5000; // Скорость падения монет
-        const backgroundMusic = new Audio('background_music.mp3'); // Фоновая музыка
-        const coinSound = 'coin.mp3'; // Звук монетки
-        const bonusCoinSound = 'bonus_coin.mp3'; // Звук бонусной монетки
+        let miningScore = 0;
 
         // Загрузка игры
         setTimeout(() => {
             loadingScreen.style.display = 'none';
             gameScreen.style.display = 'block';
-            playBackgroundMusic();
         }, 3000);
-
-        // Фоновая музыка
-        const playBackgroundMusic = () => {
-            if (soundEnabled) {
-                backgroundMusic.loop = true;
-                backgroundMusic.play();
-            }
-        };
-
-        // Функция для создания монеты
-        const createCoin = () => {
-            const coin = document.createElement('div');
-            coin.classList.add('coin');
-            coin.style.left = Math.random() * 90 + 'vw';
-            coin.style.animationDuration = `${coinFallSpeed / 1000}s`;
-            gameContainer.appendChild(coin);
-
-            coin.addEventListener('click', () => {
-                score++;
-                scoreEl.textContent = `Счёт: ${score}`;
-                coin.remove();
-                playSound(coinSound);
-                checkLevelUp();
-            });
-
-            setTimeout(() => {
-                coin.remove();
-            }, coinFallSpeed);
-        };
-
-        // Показ сообщения об уровне
-        const showLevelMessage = () => {
-            levelMessage.textContent = `Уровень ${level}`;
-            levelMessage.style.display = 'block';
-            setTimeout(() => {
-                levelMessage.style.display = 'none';
-            }, 2000);
-        };
-
-        // Проверка на повышение уровня
-        const checkLevelUp = () => {
-            if (score >= level * 50) {
-                level++;
-                coinFallSpeed = Math.max(2000, coinFallSpeed - 500); // Ускорение падения монет
-                showLevelMessage();
-            }
-        };
 
         // Таймер
         const startTimer = () => {
             timerEl.textContent = `Оставшееся время: ${timer} секунд`;
-            timerInterval = setInterval(() => {
+            const timerInterval = setInterval(() => {
                 timer--;
                 timerEl.textContent = `Оставшееся время: ${timer} секунд`;
 
                 if (timer <= 0) {
                     clearInterval(timerInterval);
-                    timerEl.textContent = 'Время вышло!';
-                    continueButton.style.display = 'block';
+                    endGame();
+                }
+            }, 1000);
+        };
+
+        // Конец игры
+        const endGame = () => {
+            gameScreen.style.display = 'none';
+            summaryScreen.style.display = 'flex';
+            finalScoreEl.textContent = `Счёт: ${score}`;
+            startMining();
+        };
+
+        // Майнинг
+        const startMining = () => {
+            miningScore = 0;
+            let miningTimer = 30;
+            const miningInterval = setInterval(() => {
+                miningTimer--;
+                miningScore += 0.1;
+                miningInfoEl.textContent = `Майнинг монет: ${miningScore.toFixed(1)}`;
+                if (miningTimer <= 0) {
+                    clearInterval(miningInterval);
                     continueButton.disabled = false;
                 }
             }, 1000);
@@ -238,37 +168,13 @@
         // Начать игру
         const startGame = () => {
             score = 0;
-            level = 1;
-            scoreEl.textContent = `Счёт: ${score}`;
             timer = 30;
+            scoreEl.textContent = `Счёт: ${score}`;
+            timerEl.textContent = `Оставшееся время: ${timer} секунд`;
+            gameScreen.style.display = 'block';
+            summaryScreen.style.display = 'none';
             startTimer();
-            startButton.style.display = 'none';
-            continueButton.style.display = 'none';
-
-            const coinInterval = setInterval(() => {
-                if (timer > 0) {
-                    createCoin();
-                } else {
-                    clearInterval(coinInterval);
-                }
-            }, 1000);
         };
-
-        // Воспроизведение звука
-        const playSound = (file) => {
-            if (soundEnabled) {
-                const audio = new Audio(file);
-                audio.play();
-            }
-        };
-
-        // Включение/выключение звука
-        toggleSoundButton.addEventListener('click', () => {
-            soundEnabled = !soundEnabled;
-            toggleSoundButton.textContent = `Звук: ${soundEnabled ? 'Включен' : 'Выключен'}`;
-            if (soundEnabled) playBackgroundMusic();
-            else backgroundMusic.pause();
-        });
 
         // События для кнопок
         startButton.addEventListener('click', startGame);
