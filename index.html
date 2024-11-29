@@ -37,7 +37,7 @@
             width: 100%;
             height: 100%;
         }
-        #timer {
+        #timer, #level {
             font-size: 24px;
             margin-top: 10px;
             color: white;
@@ -46,11 +46,6 @@
             font-size: 20px;
             margin-top: 10px;
             color: white;
-        }
-        #leaderboard {
-            font-size: 16px;
-            color: white;
-            margin-top: 10px;
         }
         .button {
             padding: 10px 20px;
@@ -69,7 +64,7 @@
             position: absolute;
             width: 50px;
             height: 50px;
-            background-image: url('coin.png'); /* Монета */
+            background-image: url('coin.png');
             background-size: cover;
             animation: fall 5s linear infinite;
         }
@@ -77,7 +72,7 @@
             position: absolute;
             width: 60px;
             height: 60px;
-            background-image: url('bonus_coin.png'); /* Бонусная монета */
+            background-image: url('bonus_coin.png');
             background-size: cover;
             animation: fall 4s linear infinite;
         }
@@ -102,7 +97,7 @@
         <h1 style="color: white;">Tap the Coin!</h1>
         <p id="score">Счёт: 0</p>
         <p id="timer">Оставшееся время: 30 секунд</p>
-        <div id="leaderboard">Топ игроков:</div>
+        <p id="level">Уровень: 1</p>
         <button class="button" id="start-button">Играть</button>
         <button class="button" id="continue-button" style="display:none;" disabled>Продолжить</button>
         <button class="button" id="toggle-sound">Звук: Включен</button>
@@ -116,39 +111,54 @@
         const continueButton = document.getElementById('continue-button');
         const timerEl = document.getElementById('timer');
         const scoreEl = document.getElementById('score');
-        const leaderboardEl = document.getElementById('leaderboard');
+        const levelEl = document.getElementById('level');
         const gameContainer = document.getElementById('game-container');
         const toggleSoundButton = document.getElementById('toggle-sound');
 
         let score = 0;
         let timer = 30;
+        let level = 1;
         let timerInterval;
         let soundEnabled = true;
-        const leaderboard = []; // Таблица лидеров
+        let coinFallSpeed = 5000; // Скорость падения монет
+        const backgroundMusic = new Audio('background_music.mp3'); // Фоновая музыка
+        const coinSound = 'coin.mp3'; // Звук монетки
+        const bonusCoinSound = 'bonus_coin.mp3'; // Звук бонусной монетки
 
         // Загрузка игры
         setTimeout(() => {
             loadingScreen.style.display = 'none';
             gameScreen.style.display = 'block';
+            playBackgroundMusic();
         }, 3000);
+
+        // Фоновая музыка
+        const playBackgroundMusic = () => {
+            if (soundEnabled) {
+                backgroundMusic.loop = true;
+                backgroundMusic.play();
+            }
+        };
 
         // Функция для создания монеты
         const createCoin = () => {
             const coin = document.createElement('div');
             coin.classList.add('coin');
             coin.style.left = Math.random() * 90 + 'vw';
+            coin.style.animationDuration = `${coinFallSpeed / 1000}s`;
             gameContainer.appendChild(coin);
 
             coin.addEventListener('click', () => {
                 score++;
                 scoreEl.textContent = `Счёт: ${score}`;
                 coin.remove();
-                playSound('coin.mp3');
+                playSound(coinSound);
+                checkLevelUp();
             });
 
             setTimeout(() => {
                 coin.remove();
-            }, 5000);
+            }, coinFallSpeed);
         };
 
         // Функция для создания бонусной монеты
@@ -156,18 +166,29 @@
             const bonusCoin = document.createElement('div');
             bonusCoin.classList.add('bonus-coin');
             bonusCoin.style.left = Math.random() * 90 + 'vw';
+            bonusCoin.style.animationDuration = `${coinFallSpeed / 1000}s`;
             gameContainer.appendChild(bonusCoin);
 
             bonusCoin.addEventListener('click', () => {
-                score += 5; // Бонусная монета даёт 5 очков
+                score += 5;
                 scoreEl.textContent = `Счёт: ${score}`;
                 bonusCoin.remove();
-                playSound('bonus_coin.mp3');
+                playSound(bonusCoinSound);
+                checkLevelUp();
             });
 
             setTimeout(() => {
                 bonusCoin.remove();
-            }, 4000);
+            }, coinFallSpeed);
+        };
+
+        // Проверка на повышение уровня
+        const checkLevelUp = () => {
+            if (score >= level * 50) {
+                level++;
+                levelEl.textContent = `Уровень: ${level}`;
+                coinFallSpeed = Math.max(2000, coinFallSpeed - 500); // Ускорение падения монет
+            }
         };
 
         // Функция для таймера
@@ -182,25 +203,16 @@
                     timerEl.textContent = 'Время вышло!';
                     continueButton.style.display = 'block';
                     continueButton.disabled = false;
-                    leaderboard.push({ player: 'Игрок', score });
-                    updateLeaderboard();
                 }
             }, 1000);
-        };
-
-        // Обновление таблицы лидеров
-        const updateLeaderboard = () => {
-            leaderboardEl.innerHTML = 'Топ игроков:<br>' + leaderboard
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 5)
-                .map((entry, index) => `${index + 1}. ${entry.player}: ${entry.score}`)
-                .join('<br>');
         };
 
         // Начать игру
         const startGame = () => {
             score = 0;
+            level = 1;
             scoreEl.textContent = `Счёт: ${score}`;
+            levelEl.textContent = `Уровень: ${level}`;
             timer = 30;
             startTimer();
             startButton.style.display = 'none';
@@ -210,22 +222,6 @@
                 if (timer > 0) {
                     createCoin();
                     if (Math.random() > 0.8) createBonusCoin(); // Бонусная монета с вероятностью 20%
-                } else {
-                    clearInterval(coinInterval);
-                }
-            }, 1000);
-        };
-
-        // Продолжить игру
-        const continueGame = () => {
-            continueButton.disabled = true;
-            timer = 30;
-            startTimer();
-
-            const coinInterval = setInterval(() => {
-                if (timer > 0) {
-                    createCoin();
-                    if (Math.random() > 0.8) createBonusCoin(); // Бонусная монета
                 } else {
                     clearInterval(coinInterval);
                 }
@@ -244,11 +240,13 @@
         toggleSoundButton.addEventListener('click', () => {
             soundEnabled = !soundEnabled;
             toggleSoundButton.textContent = `Звук: ${soundEnabled ? 'Включен' : 'Выключен'}`;
+            if (soundEnabled) playBackgroundMusic();
+            else backgroundMusic.pause();
         });
 
         // События для кнопок
         startButton.addEventListener('click', startGame);
-        continueButton.addEventListener('click', continueGame);
+        continueButton.addEventListener('click', startGame);
     </script>
 </body>
 </html>
