@@ -33,19 +33,37 @@
         }
         #game-screen {
             display: none;
-            text-align: center;
             width: 100%;
             height: 100%;
+            position: relative;
         }
-        #timer, #level {
-            font-size: 24px;
-            margin-top: 10px;
+        #timer, #score {
+            position: absolute;
+            font-size: 18px;
             color: white;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+        #timer {
+            top: 10px;
+            left: 10px;
         }
         #score {
-            font-size: 20px;
-            margin-top: 10px;
+            top: 10px;
+            right: 10px;
+        }
+        #level-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
             color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
         }
         .button {
             padding: 10px 20px;
@@ -94,10 +112,9 @@
 
     <!-- Игровой экран -->
     <div id="game-screen">
-        <h1 style="color: white;">Tap the Coin!</h1>
-        <p id="score">Счёт: 0</p>
-        <p id="timer">Оставшееся время: 30 секунд</p>
-        <p id="level">Уровень: 1</p>
+        <div id="timer">Оставшееся время: 30 секунд</div>
+        <div id="score">Счёт: 0</div>
+        <div id="level-message"></div>
         <button class="button" id="start-button">Играть</button>
         <button class="button" id="continue-button" style="display:none;" disabled>Продолжить</button>
         <button class="button" id="toggle-sound">Звук: Включен</button>
@@ -111,7 +128,7 @@
         const continueButton = document.getElementById('continue-button');
         const timerEl = document.getElementById('timer');
         const scoreEl = document.getElementById('score');
-        const levelEl = document.getElementById('level');
+        const levelMessage = document.getElementById('level-message');
         const gameContainer = document.getElementById('game-container');
         const toggleSoundButton = document.getElementById('toggle-sound');
 
@@ -161,33 +178,21 @@
             }, coinFallSpeed);
         };
 
-        // Функция для создания бонусной монеты
-        const createBonusCoin = () => {
-            const bonusCoin = document.createElement('div');
-            bonusCoin.classList.add('bonus-coin');
-            bonusCoin.style.left = Math.random() * 90 + 'vw';
-            bonusCoin.style.animationDuration = `${coinFallSpeed / 1000}s`;
-            gameContainer.appendChild(bonusCoin);
-
-            bonusCoin.addEventListener('click', () => {
-                score += 5;
-                scoreEl.textContent = `Счёт: ${score}`;
-                bonusCoin.remove();
-                playSound(bonusCoinSound);
-                checkLevelUp();
-            });
-
+        // Показ сообщения об уровне
+        const showLevelMessage = () => {
+            levelMessage.textContent = `Уровень ${level}`;
+            levelMessage.style.display = 'block';
             setTimeout(() => {
-                bonusCoin.remove();
-            }, coinFallSpeed);
+                levelMessage.style.display = 'none';
+            }, 2000);
         };
 
         // Проверка на повышение уровня
         const checkLevelUp = () => {
             if (score >= level * 50) {
                 level++;
-                levelEl.textContent = `Уровень: ${level}`;
                 coinFallSpeed = Math.max(2000, coinFallSpeed - 500); // Ускорение падения монет
+                showLevelMessage();
             }
         };
 
@@ -212,7 +217,6 @@
             score = 0;
             level = 1;
             scoreEl.textContent = `Счёт: ${score}`;
-            levelEl.textContent = `Уровень: ${level}`;
             timer = 30;
             startTimer();
             startButton.style.display = 'none';
@@ -221,7 +225,6 @@
             const coinInterval = setInterval(() => {
                 if (timer > 0) {
                     createCoin();
-                    if (Math.random() > 0.8) createBonusCoin(); // Бонусная монета с вероятностью 20%
                 } else {
                     clearInterval(coinInterval);
                 }
