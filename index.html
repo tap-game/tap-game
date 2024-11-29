@@ -13,6 +13,9 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            background-image: url('game_background.jpg'); /* Фон игры */
+            background-size: cover;
+            background-position: center;
         }
         #loading-screen {
             display: flex;
@@ -21,7 +24,10 @@
             align-items: center;
             width: 100%;
             height: 100%;
-            background-image: url('loading_background.jpg'); /* Убедись, что файл загружен */
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-image: url('loading_background.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -30,19 +36,16 @@
             text-align: center;
             width: 100%;
             height: 100%;
-            background-image: url('game_background.jpg'); /* Подключаем фон */
-            background-size: cover;
-            background-position: center;
         }
         #timer {
             font-size: 24px;
             margin-top: 10px;
-            color: #fff;
+            color: white;
         }
         #score {
             font-size: 20px;
             margin-top: 10px;
-            color: #fff;
+            color: white;
         }
         .button {
             padding: 10px 20px;
@@ -57,35 +60,51 @@
         .button:disabled {
             background-color: #cccccc;
         }
+        .coin {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-image: url('coin.png'); /* Монета */
+            background-size: cover;
+            animation: fall 5s linear infinite;
+        }
+        @keyframes fall {
+            from {
+                top: -50px;
+            }
+            to {
+                top: calc(100vh - 50px);
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Загрузочный экран -->
     <div id="loading-screen">
         <h1>Загрузка...</h1>
-        <p id="progress">Загрузка игры...</p>
     </div>
 
-    <!-- Основной игровой экран -->
+    <!-- Игровой экран -->
     <div id="game-screen">
         <h1 style="color: white;">Tap the Coin!</h1>
         <p id="score">Счёт: 0</p>
         <p id="timer">Оставшееся время: 30 секунд</p>
         <button class="button" id="start-button">Играть</button>
         <button class="button" id="continue-button" style="display:none;" disabled>Продолжить</button>
+        <div id="game-container" style="position: relative; width: 100%; height: 100%;"></div>
     </div>
 
     <script>
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
-        const progress = document.getElementById('progress');
-        const scoreEl = document.getElementById('score');
-        const timerEl = document.getElementById('timer');
         const startButton = document.getElementById('start-button');
         const continueButton = document.getElementById('continue-button');
+        const timerEl = document.getElementById('timer');
+        const scoreEl = document.getElementById('score');
+        const gameContainer = document.getElementById('game-container');
 
         let score = 0;
-        let timer = 30; // Таймер на 30 секунд
+        let timer = 30;
         let timerInterval;
 
         // Загрузка игры
@@ -94,14 +113,23 @@
             gameScreen.style.display = 'block';
         }, 3000);
 
-        // Функция для начала игры
-        const startGame = () => {
-            score = 0;
-            scoreEl.textContent = `Счёт: ${score}`;
-            timer = 30;
-            startTimer();
-            startButton.style.display = 'none';
-            continueButton.style.display = 'none';
+        // Функция для создания монетки
+        const createCoin = () => {
+            const coin = document.createElement('div');
+            coin.classList.add('coin');
+            coin.style.left = Math.random() * 90 + 'vw';
+            gameContainer.appendChild(coin);
+
+            coin.addEventListener('click', () => {
+                score++;
+                scoreEl.textContent = `Счёт: ${score}`;
+                coin.remove();
+                playSound();
+            });
+
+            setTimeout(() => {
+                coin.remove();
+            }, 5000);
         };
 
         // Функция для таймера
@@ -120,22 +148,49 @@
             }, 1000);
         };
 
-        // Функция для продолжения игры
+        // Начать игру
+        const startGame = () => {
+            score = 0;
+            scoreEl.textContent = `Счёт: ${score}`;
+            timer = 30;
+            startTimer();
+            startButton.style.display = 'none';
+            continueButton.style.display = 'none';
+
+            // Генерация монеток
+            const coinInterval = setInterval(() => {
+                if (timer > 0) {
+                    createCoin();
+                } else {
+                    clearInterval(coinInterval);
+                }
+            }, 1000);
+        };
+
+        // Продолжить игру
         const continueGame = () => {
             continueButton.disabled = true;
             timer = 30;
             startTimer();
+
+            const coinInterval = setInterval(() => {
+                if (timer > 0) {
+                    createCoin();
+                } else {
+                    clearInterval(coinInterval);
+                }
+            }, 1000);
+        };
+
+        // Воспроизведение звука монетки
+        const playSound = () => {
+            const audio = new Audio('coin.mp3'); // Файл coin.mp3 должен быть в той же папке
+            audio.play();
         };
 
         // События для кнопок
         startButton.addEventListener('click', startGame);
         continueButton.addEventListener('click', continueGame);
-
-        // Воспроизведение звука
-        const playSound = () => {
-            const audio = new Audio('coin.mp3'); // Убедись, что файл загружен
-            audio.play();
-        };
     </script>
 </body>
 </html>
