@@ -44,6 +44,7 @@
             padding: 10px;
             background: rgba(0, 0, 0, 0.5);
             border-radius: 5px;
+            z-index: 10;
         }
         #timer {
             top: 10px;
@@ -77,6 +78,28 @@
         }
         .button:disabled {
             background-color: #cccccc;
+        }
+        #start-button {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        #continue-button {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 10;
+        }
+        #toggle-sound {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
         }
         .coin {
             position: absolute;
@@ -116,7 +139,7 @@
         <div id="score">Счёт: 0</div>
         <div id="level-message"></div>
         <button class="button" id="start-button">Играть</button>
-        <button class="button" id="continue-button" style="display:none;" disabled>Продолжить</button>
+        <button class="button" id="continue-button" disabled>Продолжить</button>
         <button class="button" id="toggle-sound">Звук: Включен</button>
         <div id="game-container" style="position: relative; width: 100%; height: 100%;"></div>
     </div>
@@ -196,7 +219,7 @@
             }
         };
 
-        // Функция для таймера
+        // Таймер
         const startTimer = () => {
             timerEl.textContent = `Оставшееся время: ${timer} секунд`;
             timerInterval = setInterval(() => {
