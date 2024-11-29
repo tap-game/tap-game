@@ -8,197 +8,124 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
+            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            overflow: hidden;
         }
-        #start-screen, #game-screen {
+        #loading-screen {
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             width: 100%;
-            height: 100vh;
-            background-image: url('game_background.jpg');
+            height: 100%;
+            background-image: url('loading_background.jpg'); /* Убедись, что файл загружен */
             background-size: cover;
             background-position: center;
         }
         #game-screen {
             display: none;
+            text-align: center;
         }
-        .game-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        .coin, .bonus-coin {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-size: cover;
-            animation: fall 4s linear;
-        }
-        .coin {
-            background-image: url('coin.png');
-        }
-        .bonus-coin {
-            background-image: url('bonus_coin.png');
-            width: 70px;
-            height: 70px;
-            animation: fall 3s linear;
-        }
-        .coin.clicked, .bonus-coin.clicked {
-            animation: pop 0.5s ease-out forwards;
-        }
-        .score, .timer {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
+        #timer {
+            font-size: 24px;
+            margin-top: 10px;
             color: #333;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-        .score {
-            top: 10px;
-            left: 10px;
-        }
-        .timer {
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        button {
+        .button {
             padding: 10px 20px;
             font-size: 18px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: #fff;
             border: none;
             border-radius: 5px;
-            background-color: #007bff;
-            color: white;
             cursor: pointer;
-            margin-top: 20px;
         }
-        button:hover {
-            background-color: #0056b3;
+        .button:disabled {
+            background-color: #cccccc;
         }
     </style>
 </head>
 <body>
-    <!-- Экран старта -->
-    <div id="start-screen">
-        <h1>Добро пожаловать в Tap Game!</h1>
-        <button id="play-btn">Играть</button>
+    <!-- Загрузочный экран -->
+    <div id="loading-screen">
+        <h1>Загрузка...</h1>
+        <p id="progress">Загрузка игры...</p>
     </div>
 
-    <!-- Игровой экран -->
+    <!-- Основной игровой экран -->
     <div id="game-screen">
-        <div class="score">Счёт: <span id="score">0</span></div>
-        <div class="timer">Оставшееся время: <span id="timer">30</span> секунд</div>
-        <div class="game-container" id="game-container"></div>
+        <h1>Tap the Coin!</h1>
+        <p id="score">Счёт: 0</p>
+        <p id="timer"></p>
+        <button class="button" id="start-button">Играть</button>
+        <button class="button" id="continue-button" style="display:none;" disabled>Продолжить</button>
     </div>
 
     <script>
-        const startScreen = document.getElementById('start-screen');
+        const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
-        const playButton = document.getElementById('play-btn');
-        const gameContainer = document.getElementById('game-container');
-        const scoreDisplay = document.getElementById('score');
-        const timerDisplay = document.getElementById('timer');
+        const progress = document.getElementById('progress');
+        const scoreEl = document.getElementById('score');
+        const timerEl = document.getElementById('timer');
+        const startButton = document.getElementById('start-button');
+        const continueButton = document.getElementById('continue-button');
 
         let score = 0;
-        let timeLeft = 30;
-        let coinSpawnInterval;
-        let bonusCoinSpawnInterval;
-        let gameTimer;
+        let timer = 30; // Таймер на 30 секунд
+        let timerInterval;
 
-        // Начало игры
-        function startGame() {
+        // Загрузка игры
+        setTimeout(() => {
+            loadingScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+        }, 3000);
+
+        // Функция для начала игры
+        const startGame = () => {
             score = 0;
-            timeLeft = 30;
-            scoreDisplay.textContent = score;
-            timerDisplay.textContent = timeLeft;
-
-            startScreen.style.display = 'none';
-            gameScreen.style.display = 'flex';
-
+            scoreEl.textContent = `Счёт: ${score}`;
+            timer = 30;
             startTimer();
-            coinSpawnInterval = setInterval(spawnCoin, 1000); // Обычные монеты каждую секунду
-            bonusCoinSpawnInterval = setInterval(spawnBonusCoin, 5000); // Бонусные монеты каждые 5 секунд
-        }
+            startButton.style.display = 'none';
+            continueButton.style.display = 'none';
+        };
 
-        // Таймер игры
-        function startTimer() {
-            gameTimer = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = timeLeft;
+        // Функция для таймера
+        const startTimer = () => {
+            timerEl.textContent = `Оставшееся время: ${timer} секунд`;
+            timerInterval = setInterval(() => {
+                timer--;
+                timerEl.textContent = `Оставшееся время: ${timer} секунд`;
 
-                if (timeLeft <= 0) {
-                    endGame();
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    timerEl.textContent = 'Время вышло!';
+                    continueButton.style.display = 'block';
+                    continueButton.disabled = false;
                 }
             }, 1000);
-        }
+        };
 
-        // Конец игры
-        function endGame() {
-            clearInterval(gameTimer);
-            clearInterval(coinSpawnInterval);
-            clearInterval(bonusCoinSpawnInterval);
-            alert(`Игра окончена! Ваш счёт: ${score}`);
-            startScreen.style.display = 'flex';
-            gameScreen.style.display = 'none';
-        }
+        // Функция для продолжения игры
+        const continueGame = () => {
+            continueButton.disabled = true;
+            timer = 30;
+            startTimer();
+        };
 
-        // Спавн обычных монет
-        function spawnCoin() {
-            const coin = document.createElement('div');
-            coin.classList.add('coin');
-            coin.style.left = `${Math.random() * 90}%`;
-            coin.style.top = '-50px';
+        // События для кнопок
+        startButton.addEventListener('click', startGame);
+        continueButton.addEventListener('click', continueGame);
 
-            // Добавляем событие клика для монеты
-            coin.addEventListener('click', () => {
-                score++;
-                scoreDisplay.textContent = score;
-                coin.remove();
-            });
-
-            gameContainer.appendChild(coin);
-
-            // Удаляем монету через 4 секунды, если не нажали
-            setTimeout(() => {
-                coin.remove();
-            }, 4000);
-        }
-
-        // Спавн бонусных монет
-        function spawnBonusCoin() {
-            const bonusCoin = document.createElement('div');
-            bonusCoin.classList.add('bonus-coin');
-            bonusCoin.style.left = `${Math.random() * 90}%`;
-            bonusCoin.style.top = '-70px';
-
-            // Добавляем событие клика для бонусной монеты
-            bonusCoin.addEventListener('click', () => {
-                score += 10; // Бонусная монета даёт 10 очков
-                scoreDisplay.textContent = score;
-                bonusCoin.remove();
-            });
-
-            gameContainer.appendChild(bonusCoin);
-
-            // Удаляем бонусную монету через 4 секунды, если не нажали
-            setTimeout(() => {
-                bonusCoin.remove();
-            }, 4000);
-        }
-
-        // Запуск игры по кнопке "Играть"
-        playButton.addEventListener('click', startGame);
+        // Воспроизведение звука
+        const playSound = () => {
+            const audio = new Audio('coin.mp3'); // Убедись, что файл загружен
+            audio.play();
+        };
     </script>
 </body>
 </html>
