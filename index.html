@@ -62,6 +62,14 @@
             left: 10px;
         }
 
+        #level {
+            font-size: 20px;
+            color: yellow;
+            position: absolute;
+            top: 40px;
+            left: 10px;
+        }
+
         #coins {
             position: absolute;
             top: 0;
@@ -77,6 +85,16 @@
             height: 50px;
             background-image: url('./coin.png');
             background-size: cover;
+            z-index: 5;
+        }
+
+        .bonus-coin {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-image: url('./bonus_coin.png');
+            background-size: cover;
+            z-index: 5;
         }
 
         button {
@@ -96,6 +114,18 @@
         button:hover {
             background-color: #0056b3;
         }
+
+        #sound-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            color: black;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -108,8 +138,10 @@
 
     <div id="game-screen">
         <div id="score">Счёт: 0</div>
+        <div id="level">Уровень: 1</div>
         <div id="coins"></div>
         <button id="start-btn">Играть</button>
+        <button id="sound-toggle">Звук: Включён</button>
     </div>
 
     <script>
@@ -119,9 +151,26 @@
         const progressFill = document.getElementById('progress-fill');
         const coinsContainer = document.getElementById('coins');
         const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const soundToggle = document.getElementById('sound-toggle');
         const backgroundMusic = new Audio('./background_music.mp3');
+        let soundEnabled = true;
 
         let score = 0;
+        let level = 1;
+        let gameSpeed = 1000;
+
+        backgroundMusic.loop = true;
+
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = `Звук: ${soundEnabled ? 'Включён' : 'Выключен'}`;
+            if (soundEnabled) {
+                backgroundMusic.play();
+            } else {
+                backgroundMusic.pause();
+            }
+        });
 
         let progress = 0;
         const loadingInterval = setInterval(() => {
@@ -132,16 +181,20 @@
                 clearInterval(loadingInterval);
                 loadingScreen.style.display = 'none';
                 gameScreen.style.display = 'block';
-                startBtn.style.display = 'block'; // Показываем кнопку "Играть"
             }
         }, 1000);
 
         startBtn.addEventListener('click', () => {
+            startBtn.style.display = 'none';
             score = 0;
+            level = 1;
+            gameSpeed = 1000;
             scoreDisplay.textContent = `Счёт: ${score}`;
+            levelDisplay.textContent = `Уровень: ${level}`;
             startGame();
-            backgroundMusic.loop = true;
-            backgroundMusic.play();
+            if (soundEnabled) {
+                backgroundMusic.play();
+            }
         });
 
         function startGame() {
@@ -151,30 +204,64 @@
 
         function spawnCoins() {
             const interval = setInterval(() => {
-                const coin = document.createElement('div');
-                coin.classList.add('coin');
-                coin.style.left = `${Math.random() * 90}%`;
-                coin.style.top = `-50px`;
+                if (Math.random() < 0.1) {
+                    spawnBonusCoin();
+                } else {
+                    spawnRegularCoin();
+                }
+                if (score >= level * 50) {
+                    level++;
+                    levelDisplay.textContent = `Уровень: ${level}`;
+                    clearInterval(interval);
+                    gameSpeed *= 0.9; // Ускоряем падение монеток
+                    spawnCoins();
+                }
+            }, gameSpeed);
+        }
 
-                coin.addEventListener('click', () => {
-                    score += 1;
-                    scoreDisplay.textContent = `Счёт: ${score}`;
+        function spawnRegularCoin() {
+            const coin = document.createElement('div');
+            coin.classList.add('coin');
+            coin.style.left = `${Math.random() * 90}%`;
+            coin.style.top = `-50px`;
+
+            coin.addEventListener('click', () => {
+                score += 1;
+                scoreDisplay.textContent = `Счёт: ${score}`;
+                coin.remove();
+            });
+
+            coinsContainer.appendChild(coin);
+            animateCoin(coin);
+        }
+
+        function spawnBonusCoin() {
+            const bonusCoin = document.createElement('div');
+            bonusCoin.classList.add('bonus-coin');
+            bonusCoin.style.left = `${Math.random() * 90}%`;
+            bonusCoin.style.top = `-60px`;
+
+            bonusCoin.addEventListener('click', () => {
+                score += 5;
+                scoreDisplay.textContent = `Счёт: ${score}`;
+                bonusCoin.remove();
+            });
+
+            coinsContainer.appendChild(bonusCoin);
+            animateCoin(bonusCoin);
+        }
+
+        function animateCoin(coin) {
+            let position = 0;
+            const fallInterval = setInterval(() => {
+                position += 5;
+                coin.style.top = `${position}px`;
+
+                if (position > window.innerHeight) {
+                    clearInterval(fallInterval);
                     coin.remove();
-                });
-
-                coinsContainer.appendChild(coin);
-
-                let position = 0;
-                const fallInterval = setInterval(() => {
-                    position += 5;
-                    coin.style.top = `${position}px`;
-
-                    if (position > window.innerHeight) {
-                        clearInterval(fallInterval);
-                        coin.remove();
-                    }
-                }, 50);
-            }, 1000);
+                }
+            }, 50);
         }
     </script>
 </body>
