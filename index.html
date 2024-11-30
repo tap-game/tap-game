@@ -9,7 +9,7 @@
             margin: 0;
             font-family: Arial, sans-serif;
             overflow: hidden;
-            background-color: black;
+            background-color: black; /* Резервный фон */
         }
 
         #loading-screen {
@@ -20,7 +20,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background-image: url('loanding_background.jpg'); /* Загрузочный экран */
+            background-image: url('./game_web_app/loanding_background.jpg'); /* Путь к загрузочному экрану */
             background-size: cover;
             background-position: center;
             z-index: 10;
@@ -46,7 +46,7 @@
 
         #game-screen {
             display: none;
-            background-image: url('game_background.jpg'); /* Фон игры */
+            background-image: url('./game_web_app/game_background.jpg'); /* Путь к фону игры */
             background-size: cover;
             background-position: center;
             position: relative;
@@ -75,7 +75,7 @@
             position: absolute;
             width: 50px;
             height: 50px;
-            background-image: url('coin.png'); /* Обычная монета */
+            background-image: url('./game_web_app/coin.png'); /* Путь к монетке */
             background-size: cover;
         }
 
@@ -83,7 +83,7 @@
             position: absolute;
             width: 60px;
             height: 60px;
-            background-image: url('bonus_coin.png'); /* Бонусная монета */
+            background-image: url('./game_web_app/bonus_coin.png'); /* Путь к бонусной монетке */
             background-size: cover;
         }
 
@@ -107,7 +107,6 @@
     </style>
 </head>
 <body>
-    <!-- Загрузочный экран -->
     <div id="loading-screen">
         <p>Загрузка игры...</p>
         <div id="progress-bar">
@@ -115,7 +114,6 @@
         </div>
     </div>
 
-    <!-- Игровой экран -->
     <div id="game-screen">
         <div id="score">Счёт: 0</div>
         <div id="coins"></div>
@@ -123,18 +121,16 @@
     </div>
 
     <script>
-        // Элементы интерфейса
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
         const startBtn = document.getElementById('start-btn');
         const progressFill = document.getElementById('progress-fill');
         const coinsContainer = document.getElementById('coins');
         const scoreDisplay = document.getElementById('score');
-        const backgroundMusic = new Audio('background_music.mp3'); // Фоновая музыка
+        const backgroundMusic = new Audio('./game_web_app/background_music.mp3'); /* Путь к музыке */
 
         let score = 0;
 
-        // Показываем загрузочный экран
         let progress = 0;
         const loadingInterval = setInterval(() => {
             progress += 20;
@@ -147,7 +143,6 @@
             }
         }, 1000);
 
-        // Запуск игры
         startBtn.addEventListener('click', () => {
             score = 0;
             scoreDisplay.textContent = `Счёт: ${score}`;
@@ -156,14 +151,11 @@
             backgroundMusic.play();
         });
 
-        // Функция для запуска игры
         function startGame() {
             coinsContainer.innerHTML = '';
             spawnCoins();
-            spawnBonusCoins();
         }
 
-        // Спавн обычных монет
         function spawnCoins() {
             const interval = setInterval(() => {
                 const coin = document.createElement('div');
@@ -179,7 +171,6 @@
 
                 coinsContainer.appendChild(coin);
 
-                // Анимация падения монеты
                 let position = 0;
                 const fallInterval = setInterval(() => {
                     position += 5;
@@ -192,37 +183,6 @@
                 }, 50);
 
             }, 1000);
-        }
-
-        // Спавн бонусных монет
-        function spawnBonusCoins() {
-            const interval = setInterval(() => {
-                const bonusCoin = document.createElement('div');
-                bonusCoin.classList.add('bonus-coin');
-                bonusCoin.style.left = `${Math.random() * 90}%`;
-                bonusCoin.style.top = `-60px`;
-
-                bonusCoin.addEventListener('click', () => {
-                    score += 10; // Бонус за монету
-                    scoreDisplay.textContent = `Счёт: ${score}`;
-                    bonusCoin.remove();
-                });
-
-                coinsContainer.appendChild(bonusCoin);
-
-                // Анимация падения бонусной монеты
-                let position = 0;
-                const fallInterval = setInterval(() => {
-                    position += 7; // Бонусные монеты падают быстрее
-                    bonusCoin.style.top = `${position}px`;
-
-                    if (position > window.innerHeight) {
-                        clearInterval(fallInterval);
-                        bonusCoin.remove();
-                    }
-                }, 50);
-
-            }, 5000); // Бонусные монеты появляются каждые 5 секунд
         }
     </script>
 </body>
