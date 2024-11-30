@@ -8,155 +8,166 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background-image: url('background.jpg');
+            background-color: #f8f9fa;
+            background-image: url('game_background.jpg'); /* Фон для игры */
             background-size: cover;
             background-position: center;
+        }
+        #loading-screen {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            text-align: center;
+            font-size: 24px;
+            z-index: 10;
         }
-        #game-screen, #end-screen {
+        #progress-bar {
+            width: 80%;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        #progress-fill {
+            width: 0;
+            height: 100%;
+            background-color: #4caf50;
+            transition: width 0.3s ease-in-out;
+        }
+        #game-screen {
             display: none;
+            text-align: center;
+            padding-top: 50px;
         }
-        .button {
-            background-color: #007bff;
+        #score {
+            font-size: 20px;
             color: white;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        #leaderboard {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        button {
+            margin-top: 20px;
             padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
             border: none;
             border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
-            font-size: 18px;
-            margin-top: 10px;
         }
-        .button:hover {
+        button:hover {
             background-color: #0056b3;
-        }
-        .coin {
-            width: 50px;
-            height: 50px;
-            position: absolute;
-            background-image: url('coin.png');
-            background-size: cover;
-            animation: fall 5s linear infinite;
-        }
-        @keyframes fall {
-            from {
-                top: -60px;
-            }
-            to {
-                top: 100%;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Начальный экран -->
-    <div id="start-screen">
-        <h1>Добро пожаловать в Tap the Coin!</h1>
-        <button class="button" id="start-game-btn">Играть</button>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <p>Загрузка игры...</p>
+        <div id="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
     </div>
 
     <!-- Игровой экран -->
     <div id="game-screen">
-        <h1>Уровень: <span id="level">1</span></h1>
-        <div id="score">Счет: 0</div>
-        <div id="timer">Время: 30</div>
-        <div id="game-area"></div>
-        <button class="button" id="end-game-btn">Завершить игру</button>
+        <div id="score">Счёт: 0</div>
+        <button id="start-btn">Начать игру</button>
+        <button id="leaderboard-btn">Таблица лидеров</button>
     </div>
 
-    <!-- Конечный экран -->
-    <div id="end-screen">
-        <h1>Игра завершена!</h1>
-        <p>Ваш результат: <span id="final-score"></span></p>
-        <button class="button" id="restart-btn">Начать заново</button>
+    <!-- Таблица лидеров -->
+    <div id="leaderboard">
+        <h2>Таблица лидеров</h2>
+        <ul id="leaderboard-list"></ul>
+        <button id="back-btn">Назад</button>
     </div>
 
     <script>
-        const startScreen = document.getElementById('start-screen');
+        // Загрузка музыки
+        const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
-        const endScreen = document.getElementById('end-screen');
-        const startGameBtn = document.getElementById('start-game-btn');
-        const endGameBtn = document.getElementById('end-game-btn');
-        const restartBtn = document.getElementById('restart-btn');
-        const gameArea = document.getElementById('game-area');
+        const leaderboard = document.getElementById('leaderboard');
+        const startBtn = document.getElementById('start-btn');
+        const leaderboardBtn = document.getElementById('leaderboard-btn');
+        const backBtn = document.getElementById('back-btn');
+        const progressFill = document.getElementById('progress-fill');
         const scoreDisplay = document.getElementById('score');
-        const levelDisplay = document.getElementById('level');
-        const timerDisplay = document.getElementById('timer');
-        const finalScore = document.getElementById('final-score');
+        const leaderboardList = document.getElementById('leaderboard-list');
 
         let score = 0;
-        let level = 1;
-        let timeLeft = 30;
-        let gameInterval;
-        let timerInterval;
 
-        function startGame() {
-            startScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
+        // Музыка при загрузке
+        const loadingMusic = new Audio('loading_music.mp3');
+        loadingMusic.loop = true;
+        loadingMusic.play();
+
+        let progress = 0;
+        const loadingInterval = setInterval(() => {
+            progress += 20;
+            progressFill.style.width = `${progress}%`;
+
+            if (progress >= 100) {
+                clearInterval(loadingInterval);
+                loadingScreen.style.display = 'none';
+                gameScreen.style.display = 'block';
+                loadingMusic.pause();
+            }
+        }, 1000);
+
+        // Начать игру
+        startBtn.addEventListener('click', () => {
             score = 0;
-            level = 1;
-            timeLeft = 30;
-            updateScore();
-            updateLevel();
-            startTimer();
-            spawnCoins();
-        }
+            scoreDisplay.textContent = `Счёт: ${score}`;
+            // Добавьте логику игры
+        });
 
-        function endGame() {
+        // Открыть таблицу лидеров
+        leaderboardBtn.addEventListener('click', () => {
             gameScreen.style.display = 'none';
-            endScreen.style.display = 'block';
-            finalScore.textContent = score;
-            clearInterval(gameInterval);
-            clearInterval(timerInterval);
-        }
+            leaderboard.style.display = 'block';
 
-        function restartGame() {
-            endScreen.style.display = 'none';
-            startScreen.style.display = 'block';
-        }
+            // Обновить таблицу лидеров
+            leaderboardList.innerHTML = '';
+            const leaders = JSON.parse(localStorage.getItem('leaderboard')) || [];
+            leaders.forEach((entry) => {
+                const li = document.createElement('li');
+                li.textContent = `${entry.name}: ${entry.score}`;
+                leaderboardList.appendChild(li);
+            });
+        });
 
-        function updateScore() {
-            scoreDisplay.textContent = `Счет: ${score}`;
-        }
+        // Вернуться из таблицы лидеров
+        backBtn.addEventListener('click', () => {
+            leaderboard.style.display = 'none';
+            gameScreen.style.display = 'block';
+        });
 
-        function updateLevel() {
-            levelDisplay.textContent = level;
+        // Сохранить очки после игры
+        function saveScore(name, score) {
+            const leaders = JSON.parse(localStorage.getItem('leaderboard')) || [];
+            leaders.push({ name, score });
+            leaders.sort((a, b) => b.score - a.score); // Сортировка по очкам
+            localStorage.setItem('leaderboard', JSON.stringify(leaders.slice(0, 10))); // Топ-10
         }
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = `Время: ${timeLeft}`;
-                if (timeLeft === 0) {
-                    clearInterval(timerInterval);
-                    endGame();
-                }
-            }, 1000);
-        }
-
-        function spawnCoins() {
-            gameInterval = setInterval(() => {
-                const coin = document.createElement('div');
-                coin.classList.add('coin');
-                coin.style.left = `${Math.random() * 90}%`;
-                coin.addEventListener('click', () => {
-                    score++;
-                    updateScore();
-                    coin.remove();
-                });
-                gameArea.appendChild(coin);
-                setTimeout(() => coin.remove(), 5000);
-            }, 1000 - level * 100); // Ускорение с каждым уровнем
-        }
-
-        startGameBtn.addEventListener('click', startGame);
-        endGameBtn.addEventListener('click', endGame);
-        restartBtn.addEventListener('click', restartGame);
     </script>
 </body>
 </html>
