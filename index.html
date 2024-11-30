@@ -20,7 +20,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background-image: url('./game_web_app/loanding_background.jpg'); /* Путь к загрузочному экрану */
+            background-image: url('./loanding_background.jpg'); /* Путь к загрузочному экрану */
             background-size: cover;
             background-position: center;
             z-index: 10;
@@ -46,7 +46,7 @@
 
         #game-screen {
             display: none;
-            background-image: url('./game_web_app/game_background.jpg'); /* Путь к фону игры */
+            background-image: url('./game_background.jpg'); /* Путь к фону игры */
             background-size: cover;
             background-position: center;
             position: relative;
@@ -75,7 +75,7 @@
             position: absolute;
             width: 50px;
             height: 50px;
-            background-image: url('./game_web_app/coin.png'); /* Путь к монетке */
+            background-image: url('./coin.png'); /* Путь к монетке */
             background-size: cover;
         }
 
@@ -83,7 +83,7 @@
             position: absolute;
             width: 60px;
             height: 60px;
-            background-image: url('./game_web_app/bonus_coin.png'); /* Путь к бонусной монетке */
+            background-image: url('./bonus_coin.png'); /* Путь к бонусной монетке */
             background-size: cover;
         }
 
@@ -121,22 +121,26 @@
     </div>
 
     <script>
+        console.log("Инициализация игры...");
+
         const loadingScreen = document.getElementById('loading-screen');
         const gameScreen = document.getElementById('game-screen');
         const startBtn = document.getElementById('start-btn');
         const progressFill = document.getElementById('progress-fill');
         const coinsContainer = document.getElementById('coins');
         const scoreDisplay = document.getElementById('score');
-        const backgroundMusic = new Audio('./game_web_app/background_music.mp3'); /* Путь к музыке */
+        const backgroundMusic = new Audio('./background_music.mp3'); /* Путь к музыке */
 
         let score = 0;
 
         let progress = 0;
         const loadingInterval = setInterval(() => {
+            console.log("Загрузка: " + progress + "%");
             progress += 20;
             progressFill.style.width = `${progress}%`;
 
             if (progress >= 100) {
+                console.log("Загрузка завершена.");
                 clearInterval(loadingInterval);
                 loadingScreen.style.display = 'none';
                 gameScreen.style.display = 'block';
@@ -144,6 +148,7 @@
         }, 1000);
 
         startBtn.addEventListener('click', () => {
+            console.log("Кнопка 'Играть' нажата.");
             score = 0;
             scoreDisplay.textContent = `Счёт: ${score}`;
             startGame();
@@ -152,11 +157,13 @@
         });
 
         function startGame() {
+            console.log("Игра началась.");
             coinsContainer.innerHTML = '';
             spawnCoins();
         }
 
         function spawnCoins() {
+            console.log("Создание монет.");
             const interval = setInterval(() => {
                 const coin = document.createElement('div');
                 coin.classList.add('coin');
@@ -165,6 +172,7 @@
 
                 coin.addEventListener('click', () => {
                     score += 1;
+                    console.log("Монета собрана. Счёт: " + score);
                     scoreDisplay.textContent = `Счёт: ${score}`;
                     coin.remove();
                 });
